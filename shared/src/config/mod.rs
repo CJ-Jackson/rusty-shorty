@@ -1,7 +1,7 @@
-use poem::PoemConfig;
 use error_stack::{Report, ResultExt};
 use figment::providers::{Format, Serialized, Toml};
 use figment::{Figment, Profile};
+use poem::PoemConfig;
 use serde::{Deserialize, Serialize};
 use sqlite::SqliteConfig;
 use std::env::var;
@@ -29,7 +29,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             poem_public: Arc::new(PoemConfig::default()),
-            poem_backoffice: Arc::new(PoemConfig{
+            poem_backoffice: Arc::new(PoemConfig {
                 address: "127.0.0.1".to_string(),
                 port: 8001,
             }),
@@ -44,15 +44,15 @@ impl Config {
     fn build_figment() -> Figment {
         Figment::new()
             .merge(Serialized::defaults(Config::default()))
-            .merge(Toml::file("little_poem.toml").nested())
+            .merge(Toml::file("rusty_shorty.toml").nested())
             .merge(
                 Toml::file(
-                    var("LITTLE_POEM_CONFIG_PATH")
-                        .unwrap_or_else(|_| "little_poem.local.toml".to_string()),
+                    var("RUSTY_SHORTY_CONFIG_PATH")
+                        .unwrap_or_else(|_| "rusty_shorty.local.toml".to_string()),
                 )
-                    .nested(),
+                .nested(),
             )
-            .select(Profile::from_env_or("LITTLE_POEM_PROFILE", "default"))
+            .select(Profile::from_env_or("RUSTY_SHORTY_PROFILE", "default"))
     }
 
     fn parse() -> Result<Self, Report<ConfigError>> {
