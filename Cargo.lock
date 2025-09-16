@@ -125,7 +125,9 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 name = "backoffice"
 version = "0.1.0"
 dependencies = [
+ "error-stack",
  "shared",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -1307,7 +1309,9 @@ dependencies = [
 name = "public"
 version = "0.1.0"
 dependencies = [
+ "error-stack",
  "shared",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -1553,7 +1557,10 @@ name = "rusty-shorty"
 version = "0.1.0"
 dependencies = [
  "backoffice",
+ "error-stack",
  "public",
+ "thiserror 2.0.16",
+ "tokio",
 ]
 
 [[package]]
@@ -1721,6 +1728,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
+name = "signal-hook-registry"
+version = "1.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2a4719bff48cee6b39d12c020eeb490953ad2443b7055bd0b21fca26bd8c28b"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "slab"
 version = "0.4.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1859,7 +1875,9 @@ dependencies = [
  "io-uring",
  "libc",
  "mio",
+ "parking_lot",
  "pin-project-lite",
+ "signal-hook-registry",
  "slab",
  "socket2",
  "tokio-macros",

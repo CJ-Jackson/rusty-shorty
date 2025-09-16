@@ -1,4 +1,4 @@
-mod boot_error;
+pub mod boot_error;
 
 use error_stack::{Report, ResultExt};
 use std::error::Error;

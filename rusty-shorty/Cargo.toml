@@ -6,3 +6,6 @@ edition = "2024"
 [dependencies]
 backoffice = { workspace = true }
 public = { workspace = true }
+thiserror = { workspace = true }
+error-stack = { workspace = true }
+tokio = { workspace = true }
