@@ -1,11 +1,11 @@
 #[derive(Debug, Clone, PartialEq)]
-pub enum Roles {
+pub enum Role {
     ROOT,
     USER,
     VISITOR,
 }
 
-impl From<&str> for Roles {
+impl From<&str> for Role {
     fn from(s: &str) -> Self {
         match s {
             "root" => Self::ROOT,
@@ -16,17 +16,17 @@ impl From<&str> for Roles {
     }
 }
 
-impl From<Roles> for String {
-    fn from(r: Roles) -> Self {
+impl From<Role> for String {
+    fn from(r: Role) -> Self {
         match r {
-            Roles::ROOT => "root".to_string(),
-            Roles::USER => "user".to_string(),
-            Roles::VISITOR => "visitor".to_string(),
+            Role::ROOT => "root".to_string(),
+            Role::USER => "user".to_string(),
+            Role::VISITOR => "visitor".to_string(),
         }
     }
 }
 
-impl Roles {
+impl Role {
     pub fn level(&self) -> u8 {
         match self {
             Self::ROOT => 2,
@@ -40,7 +40,7 @@ impl Roles {
     }
 }
 
-impl PartialOrd for Roles {
+impl PartialOrd for Role {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         self.level().partial_cmp(&other.level())
     }
