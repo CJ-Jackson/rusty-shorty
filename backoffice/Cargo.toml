@@ -10,3 +10,4 @@ shared = { workspace = true }
 poem = { workspace = true }
 rusqlite = { workspace = true }
 uuid = { workspace = true }
+rust-embed = { workspace = true }
