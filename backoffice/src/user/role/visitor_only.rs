@@ -12,7 +12,7 @@ impl<E: Endpoint> Endpoint for VisitorOnly<E> {
     async fn call(&self, req: Request) -> poem::Result<Self::Output> {
         let Dep(user_context) = Dep::<UserIdContext>::from_request_without_body(&req).await?;
 
-        if user_context.role != Role::VISITOR {
+        if user_context.role != Role::Visitor {
             return Err(Error::from_status(StatusCode::FORBIDDEN));
         }
 

@@ -1,18 +1,19 @@
+pub mod user_role_check;
 pub mod visitor_only;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Role {
-    ROOT,
-    USER,
-    VISITOR,
+    Root,
+    User,
+    Visitor,
 }
 
 impl From<&str> for Role {
     fn from(s: &str) -> Self {
         match s {
-            "root" => Self::ROOT,
-            "user" => Self::USER,
-            "visitor" => Self::VISITOR,
+            "root" => Self::Root,
+            "user" => Self::User,
+            "visitor" => Self::Visitor,
             _ => panic!("Invalid role"),
         }
     }
@@ -21,9 +22,9 @@ impl From<&str> for Role {
 impl From<Role> for String {
     fn from(r: Role) -> Self {
         match r {
-            Role::ROOT => "root".to_string(),
-            Role::USER => "user".to_string(),
-            Role::VISITOR => "visitor".to_string(),
+            Role::Root => "root".to_string(),
+            Role::User => "user".to_string(),
+            Role::Visitor => "visitor".to_string(),
         }
     }
 }
@@ -31,14 +32,14 @@ impl From<Role> for String {
 impl Role {
     pub fn level(&self) -> u8 {
         match self {
-            Self::ROOT => 2,
-            Self::USER => 1,
-            Self::VISITOR => 0,
+            Self::Root => 2,
+            Self::User => 1,
+            Self::Visitor => 0,
         }
     }
 
     pub fn all_roles() -> Vec<Self> {
-        vec![Self::ROOT, Self::USER, Self::VISITOR]
+        vec![Self::Root, Self::User, Self::Visitor]
     }
 }
 

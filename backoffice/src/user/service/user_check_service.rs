@@ -25,7 +25,7 @@ impl UserCheckService {
             UserIdContext {
                 id: 0,
                 username: "visitor".to_string(),
-                role: Role::VISITOR,
+                role: Role::Visitor,
             }
         }
     }
