@@ -130,6 +130,7 @@ dependencies = [
  "rusqlite",
  "shared",
  "thiserror 2.0.16",
+ "uuid",
 ]
 
 [[package]]

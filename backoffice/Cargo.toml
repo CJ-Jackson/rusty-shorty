@@ -9,3 +9,4 @@ error-stack = { workspace = true }
 shared = { workspace = true }
 poem = { workspace = true }
 rusqlite = { workspace = true }
+uuid = { workspace = true }

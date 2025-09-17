@@ -1,3 +1,5 @@
+pub mod visitor_only;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Role {
     ROOT,

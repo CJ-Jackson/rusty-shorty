@@ -29,7 +29,7 @@ pub async fn boot() -> Result<(), Report<MainError>> {
         .with(CookieJarManager::new())
         .with(CookieSession::new(CookieConfig::new()))
         .with(Csrf::new())
-        .around(init_cache_local::<Arc<UserIdContext>, _>);
+        .around(init_cache_local::<UserIdContext, _>);
 
     match config.upgrade() {
         Some(config) => {
