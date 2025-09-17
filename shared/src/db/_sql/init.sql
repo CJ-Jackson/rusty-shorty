@@ -4,7 +4,8 @@ CREATE TABLE backoffice_users
 (
     id       INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     username TEXT UNIQUE                       NOT NULL,
-    password BLOB                              NOT NULL
+    password BLOB                              NOT NULL,
+    role     TEXT                              NOT NULL
 );
 
 CREATE TABLE user_login_tokens

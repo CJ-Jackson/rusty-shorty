@@ -1,2 +1,2 @@
-INSERT INTO backoffice_users (username, password)
-VALUES (:username, :password)
+INSERT INTO backoffice_users (username, password, role)
+VALUES (:username, :password, 'root')

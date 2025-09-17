@@ -1,3 +1,6 @@
+pub(crate) mod common;
+pub(crate) mod user;
+
 use error_stack::Report;
 use shared::error::boot_error::MainError;
 

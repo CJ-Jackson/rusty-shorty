@@ -126,6 +126,8 @@ name = "backoffice"
 version = "0.1.0"
 dependencies = [
  "error-stack",
+ "poem",
+ "rusqlite",
  "shared",
  "thiserror 2.0.16",
 ]
