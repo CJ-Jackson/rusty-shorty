@@ -3,7 +3,7 @@ use maud::{Markup, html};
 use poem::error::ResponseError;
 use poem::http::StatusCode;
 use poem::web::{CsrfToken, CsrfVerifier, Json};
-use poem::{FromRequest, IntoResponse, Request, RequestBody, Response, handler};
+use poem::{Endpoint, IntoResponse, Request, Response, handler};
 use serde_json::{Value, json};
 use std::error::Error;
 use thiserror::Error;
@@ -49,23 +49,29 @@ impl CsrfVerifierError for CsrfVerifier {
     }
 }
 
-pub struct CsrfHeaderChecker;
+pub struct CsrfTokenChecker<E: Endpoint>(E);
 
-impl<'a> FromRequest<'a> for CsrfHeaderChecker {
-    async fn from_request(req: &'a Request, _body: &mut RequestBody) -> poem::Result<Self> {
+impl<E: Endpoint> Endpoint for CsrfTokenChecker<E> {
+    type Output = Response;
+
+    async fn call(&self, req: Request) -> poem::Result<Self::Output> {
         let token = req.header("X-Csrf-Token").ok_or_else(|| CsrfError)?;
 
         match req.data::<CsrfVerifier>() {
-            None => Ok(Self),
+            None => Ok(self.0.call(req).await?.into_response()),
             Some(csrf_verifier) => {
                 if csrf_verifier.is_valid(token) {
-                    Ok(Self)
+                    Ok(self.0.call(req).await?.into_response())
                 } else {
                     Err(CsrfError.into())
                 }
             }
         }
     }
+}
+
+pub fn csrf_header_check<E: Endpoint>(endpoint: E) -> CsrfTokenChecker<E> {
+    CsrfTokenChecker(endpoint)
 }
 
 #[handler]
