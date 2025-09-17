@@ -3,6 +3,7 @@ pub(crate) mod home;
 pub(crate) mod user;
 
 use crate::common::embed::{AssetFilesEndPoint, EMBED_PATH};
+use crate::common::locale::build_locale_resources;
 use crate::home::home_route;
 use crate::user::model::user_model::UserIdContext;
 use error_stack::{Report, ResultExt};
@@ -34,6 +35,7 @@ pub async fn boot() -> Result<(), Report<MainError>> {
         .with(CookieJarManager::new())
         .with(CookieSession::new(CookieConfig::new()))
         .with(Csrf::new())
+        .data(build_locale_resources().change_context(MainError::LocaleError)?)
         .around(init_cache_local::<UserIdContext, _>);
 
     match config.upgrade() {

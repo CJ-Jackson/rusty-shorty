@@ -22,7 +22,7 @@ pub struct AssetHidden;
 pub struct AssetLocale;
 
 impl AssetLocale {
-    fn locale_map() -> HashMap<String, String> {
+    pub fn locale_map() -> HashMap<String, String> {
         let mut map = HashMap::new();
         for value in Self::iter() {
             let locale = value.split("/").next().unwrap_or_default();

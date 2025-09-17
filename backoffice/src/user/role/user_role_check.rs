@@ -15,7 +15,7 @@ impl<E: Endpoint> Endpoint for UserRoleCheck<E> {
         let Dep(user_context) = Dep::<UserIdContext>::from_request_without_body(&req).await?;
 
         if user_context.role == Role::Visitor {
-            return Ok(Redirect::see_other(LOGIN_ROUTE).into_response());
+            return Ok(Redirect::see_other(LOGIN_ROUTE.to_owned() + "/").into_response());
         }
         if user_context.role < self.0 {
             return Err(Error::from_status(StatusCode::UNAUTHORIZED));
