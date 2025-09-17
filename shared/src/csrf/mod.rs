@@ -3,7 +3,7 @@ use maud::{Markup, html};
 use poem::error::ResponseError;
 use poem::http::StatusCode;
 use poem::web::{CsrfToken, CsrfVerifier, Json};
-use poem::{Endpoint, IntoResponse, Request, Response, handler};
+use poem::{Endpoint, IntoResponse, Request, Response, get, handler};
 use serde_json::{Value, json};
 use std::error::Error;
 use thiserror::Error;
@@ -80,5 +80,5 @@ async fn fetch_csrf_token(token: &CsrfToken) -> Json<Value> {
 }
 
 pub fn route_csrf() -> poem::Route {
-    poem::Route::new().at("/token", fetch_csrf_token)
+    poem::Route::new().at("/token", get(fetch_csrf_token))
 }
