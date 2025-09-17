@@ -56,12 +56,12 @@ impl<T: ConnectionMarker> SqliteClient<T> {
             conn.execute(
                 include_str!("_sql/add_user.sql",),
                 named_params! {
-                    ":username": "default",
+                    ":username": "admin",
                     ":password": password.to_vec(),
                 },
             )
-                .change_context(SqliteClientError::InitFailed)
-                .attach_critical("Failed to create default user".to_string())?;
+            .change_context(SqliteClientError::InitFailed)
+            .attach_critical("Failed to create default user".to_string())?;
         }
 
         Ok(SqliteClient(Arc::new(Mutex::new(conn)), PhantomData))
