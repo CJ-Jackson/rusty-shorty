@@ -84,7 +84,7 @@ impl Role {
     }
 
     pub fn all_roles() -> Vec<Self> {
-        vec![Self::Root, Self::User, Self::Visitor]
+        vec![Self::Root, Self::User]
     }
 }
 
