@@ -13,7 +13,10 @@ impl<'de> Visitor<'de> for RoleVisitor {
         formatter.write_str("a role")
     }
 
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> where E: serde::de::Error {
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
         Role::try_from(v).map_err(|_| E::custom("invalid role"))
     }
 }
@@ -32,13 +35,19 @@ impl Default for Role {
 }
 
 impl Serialize for Role {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
         serializer.serialize_str(String::from(self).as_str())
     }
 }
 
 impl<'de> Deserialize<'de> for Role {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: serde::Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
         deserializer.deserialize_str(RoleVisitor)
     }
 }
