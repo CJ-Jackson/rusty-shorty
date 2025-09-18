@@ -1,7 +1,7 @@
 use crate::user::model::user_model::UserIdContext;
 use crate::user::role::Role;
 use poem::http::StatusCode;
-use poem::{Endpoint, Error, FromRequest, IntoResponse, Request, Response};
+use poem::{Endpoint, Error, FromRequest, IntoEndpoint, IntoResponse, Request, Response};
 use shared::context::Dep;
 
 struct VisitorOnly<E: Endpoint>(E);
@@ -15,11 +15,15 @@ impl<E: Endpoint> Endpoint for VisitorOnly<E> {
         if user_context.role != Role::Visitor {
             return Err(Error::from_status(StatusCode::FORBIDDEN));
         }
-        
+
         self.0.call(req).await
     }
 }
 
-pub fn visitor_only<E: Endpoint>(endpoint: E) -> impl Endpoint {
-    VisitorOnly(endpoint)
+pub fn visitor_only<E>(endpoint: E) -> impl Endpoint
+where
+    E: IntoEndpoint,
+    E::Endpoint: 'static,
+{
+    VisitorOnly(endpoint.into_endpoint())
 }

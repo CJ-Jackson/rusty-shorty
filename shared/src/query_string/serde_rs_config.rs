@@ -1,4 +1,4 @@
-use poem::{Endpoint, Request};
+use poem::{Endpoint, IntoEndpoint, Request};
 use serde_qs::Config;
 
 struct SerdeRsConfig<E: Endpoint>(Config, E);
@@ -13,6 +13,10 @@ impl<E: Endpoint> Endpoint for SerdeRsConfig<E> {
     }
 }
 
-pub fn with_serde_rs_config<E: Endpoint>(config: Config, endpoint: E) -> impl Endpoint {
-    SerdeRsConfig(config, endpoint)
+pub fn with_serde_rs_config<E>(config: Config, endpoint: E) -> impl Endpoint
+where
+    E: IntoEndpoint,
+    E::Endpoint: 'static,
+{
+    SerdeRsConfig(config, endpoint.into_endpoint())
 }
