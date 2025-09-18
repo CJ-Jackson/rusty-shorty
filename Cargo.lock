@@ -130,6 +130,7 @@ dependencies = [
  "poem",
  "rusqlite",
  "rust-embed",
+ "serde",
  "shared",
  "thiserror 2.0.16",
  "uuid",
@@ -435,7 +436,7 @@ dependencies = [
  "libc",
  "option-ext",
  "redox_users",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.0",
 ]
 
 [[package]]
@@ -1655,6 +1656,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_qs"
+version = "1.0.0-rc.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4cb0b9062a400c31442e67d1f2b1e7746bebd691110ebee1b7d0c7293b04fab1"
+dependencies = [
+ "itoa",
+ "percent-encoding",
+ "ryu",
+ "serde",
+ "thiserror 2.0.16",
+]
+
+[[package]]
 name = "serde_spanned"
 version = "0.6.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1707,12 +1721,14 @@ dependencies = [
  "error-stack",
  "figment",
  "maud",
+ "mime",
  "poem",
  "rmp-serde",
  "rusqlite",
  "rust-embed",
  "serde",
  "serde_json",
+ "serde_qs",
  "thiserror 2.0.16",
  "tokio",
  "uuid",

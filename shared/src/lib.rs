@@ -10,3 +10,4 @@ pub mod error;
 pub mod flash;
 pub mod locale;
 pub mod password;
+pub mod query_string;

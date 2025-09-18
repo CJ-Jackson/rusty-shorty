@@ -1,5 +1,22 @@
+use serde::de::Visitor;
+use serde::{Deserialize, Serialize};
+
 pub mod user_role_check;
 pub mod visitor_only;
+
+struct RoleVisitor;
+
+impl<'de> Visitor<'de> for RoleVisitor {
+    type Value = Role;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("a role")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> where E: serde::de::Error {
+        Role::try_from(v).map_err(|_| E::custom("invalid role"))
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Role {
@@ -8,19 +25,38 @@ pub enum Role {
     Visitor,
 }
 
-impl From<&str> for Role {
-    fn from(s: &str) -> Self {
+impl Default for Role {
+    fn default() -> Self {
+        Self::Visitor
+    }
+}
+
+impl Serialize for Role {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+        serializer.serialize_str(String::from(self).as_str())
+    }
+}
+
+impl<'de> Deserialize<'de> for Role {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: serde::Deserializer<'de> {
+        deserializer.deserialize_str(RoleVisitor)
+    }
+}
+
+impl TryFrom<&str> for Role {
+    type Error = ();
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
         match s {
-            "root" => Self::Root,
-            "user" => Self::User,
-            "visitor" => Self::Visitor,
-            _ => panic!("Invalid role"),
+            "root" => Ok(Self::Root),
+            "user" => Ok(Self::User),
+            "visitor" => Ok(Self::Visitor),
+            _ => Err(()),
         }
     }
 }
 
-impl From<Role> for String {
-    fn from(r: Role) -> Self {
+impl From<&Role> for String {
+    fn from(r: &Role) -> Self {
         match r {
             Role::Root => "root".to_string(),
             Role::User => "user".to_string(),

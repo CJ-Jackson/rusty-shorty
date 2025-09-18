@@ -80,7 +80,7 @@ impl UserRepository {
                     Ok(UserIdContext {
                         id: row.get("id")?,
                         username: row.get("username")?,
-                        role: Role::from(row.get::<_, String>("role")?.as_str()),
+                        role: Role::try_from(row.get::<_, String>("role")?.as_str()).unwrap_or_default(),
                     })
                 },
             )
