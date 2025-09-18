@@ -7,7 +7,7 @@ use shared::context::Dep;
 struct VisitorOnly<E: Endpoint>(E);
 
 impl<E: Endpoint> Endpoint for VisitorOnly<E> {
-    type Output = Response;
+    type Output = E::Output;
 
     async fn call(&self, req: Request) -> poem::Result<Self::Output> {
         let Dep(user_context) = Dep::<UserIdContext>::from_request_without_body(&req).await?;
@@ -15,8 +15,8 @@ impl<E: Endpoint> Endpoint for VisitorOnly<E> {
         if user_context.role != Role::Visitor {
             return Err(Error::from_status(StatusCode::FORBIDDEN));
         }
-
-        Ok(self.0.call(req).await?.into_response())
+        
+        self.0.call(req).await
     }
 }
 

@@ -56,9 +56,11 @@ impl<T> DerefMut for FormQs<T> {
 
 impl<'a, T: DeserializeOwned> FromRequest<'a> for FormQs<T> {
     async fn from_request(req: &'a Request, body: &mut RequestBody) -> Result<Self> {
+        let config = req.data::<serde_qs::Config>().map(|v| v.clone()).unwrap_or_default();
+
         if req.method() == Method::GET {
             Ok(
-                serde_qs::from_str(req.uri().query().unwrap_or_default())
+                config.deserialize_str(req.uri().query().unwrap_or_default())
                     .map_err(ParseFormError::UrlDecode)
                     .map(Self)?,
             )
@@ -73,7 +75,7 @@ impl<'a, T: DeserializeOwned> FromRequest<'a> for FormQs<T> {
             }
 
             Ok(Self(
-                serde_qs::from_bytes(&body.take()?.into_vec().await?)
+                config.deserialize_bytes(&body.take()?.into_vec().await?)
                     .map_err(ParseFormError::UrlDecode)?,
             ))
         }

@@ -34,7 +34,8 @@ impl<T> DerefMut for QueryQs<T> {
 
 impl<T: DeserializeOwned> QueryQs<T> {
     async fn internal_from_request(req: &Request) -> Result<Self, ParseQueryError> {
-        Ok(serde_qs::from_str(req.uri().query().unwrap_or_default()).map(Self)?)
+        let config = req.data::<serde_qs::Config>().map(|v| v.clone()).unwrap_or_default();
+        Ok(config.deserialize_str(req.uri().query().unwrap_or_default()).map(Self)?)
     }
 }
 
