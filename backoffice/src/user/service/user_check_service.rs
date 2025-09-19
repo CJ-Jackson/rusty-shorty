@@ -44,7 +44,9 @@ impl FromContext for UserCheckService {
         let cookie = ctx.req.cookie();
         Ok(Self::new(
             ctx.inject().await?,
-            cookie.get(LOGIN_TOKEN_COOKIE_NAME).map(|v| v.to_string()),
+            cookie
+                .get(LOGIN_TOKEN_COOKIE_NAME)
+                .map(|v| v.value_str().to_string()),
         ))
     }
 }

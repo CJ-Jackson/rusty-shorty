@@ -13,3 +13,5 @@ uuid = { workspace = true }
 rust-embed = { workspace = true }
 maud = { workspace = true }
 serde = { workspace = true }
+cjtoolkit-structured-validator = { workspace = true }
+chrono = { workspace = true }

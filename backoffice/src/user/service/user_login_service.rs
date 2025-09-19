@@ -2,7 +2,7 @@ use crate::user::LOGIN_TOKEN_COOKIE_NAME;
 use crate::user::repository::user_repository::UserRepository;
 use error_stack::Report;
 use shared::context::{Context, ContextError, FromContext};
-use shared::password::{Password, PasswordState};
+use shared::password::Password;
 use uuid::Uuid;
 
 pub struct UserLoginService {
@@ -54,7 +54,9 @@ impl FromContext for UserLoginService {
         let cookie = ctx.req.cookie();
         Ok(Self::new(
             ctx.inject().await?,
-            cookie.get(LOGIN_TOKEN_COOKIE_NAME).map(|v| v.to_string()),
+            cookie
+                .get(LOGIN_TOKEN_COOKIE_NAME)
+                .map(|v| v.value_str().to_string()),
         ))
     }
 }
