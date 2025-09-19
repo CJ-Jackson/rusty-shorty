@@ -2,7 +2,7 @@ use crate::user::role::Role;
 use crate::user::service::user_check_service::UserCheckService;
 use error_stack::Report;
 use shared::cache_local::CacheLocalRequestExt;
-use shared::context::{Context, ContextError, Dep, FromContext};
+use shared::context::{Context, ContextError, FromContext};
 
 #[derive(Debug, Clone)]
 pub struct UserIdContext {
