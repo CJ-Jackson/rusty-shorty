@@ -1,3 +1,3 @@
-SELECT 1 AS taken
-FROM backoffice_users
-WHERE username = :username
+select 1 as taken
+from backoffice_users
+where username = :username

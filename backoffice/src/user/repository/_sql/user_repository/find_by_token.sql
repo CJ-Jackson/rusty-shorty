@@ -1,6 +1,6 @@
-SELECT u.id, u.username, u.role
-FROM backoffice_users AS u
-         INNER JOIN user_login_tokens ult on u.id = ult.user_id
-WHERE ult.token = :token
-  AND ult.expire_after > datetime('now')
-LIMIT 1;
+select u.id, u.username, u.role
+from backoffice_users as u
+         inner join user_login_tokens ult on u.id = ult.user_id
+where ult.token = :token
+  and ult.expire_after > datetime('now')
+limit 1;

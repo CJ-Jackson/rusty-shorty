@@ -28,3 +28,4 @@ cjtoolkit-structured-validator = "0.5.2"
 rust-embed = { version = "8.7.2", features = ["include-exclude", "interpolate-folder-path"] }
 uuid = { version = "1.18.1", features = ["v4"] }
 serde_qs = "1.0.0-rc.3"
+paspio = "1.0.0"

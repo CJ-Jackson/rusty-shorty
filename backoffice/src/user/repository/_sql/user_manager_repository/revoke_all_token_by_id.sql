@@ -1,3 +1,3 @@
 delete
 from user_login_tokens
-where token = :token;
+where user_id = :user_id

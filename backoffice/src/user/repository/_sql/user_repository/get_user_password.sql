@@ -1,4 +1,4 @@
-SELECT id, password
-FROM backoffice_users
-WHERE username = :username
-LIMIT 1;
+select id, password
+from backoffice_users
+where username = :username
+limit 1;

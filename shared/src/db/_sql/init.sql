@@ -1,27 +1,27 @@
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE backoffice_users
+create table backoffice_users
 (
-    id       INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    username TEXT UNIQUE                       NOT NULL,
-    password BLOB                              NOT NULL,
-    role     TEXT                              NOT NULL
+    id       integer primary key autoincrement not null,
+    username text unique                       not null,
+    password blob                              not null,
+    role     text                              not null
 );
 
-CREATE TABLE user_login_tokens
+create table user_login_tokens
 (
-    user_id      INTEGER     NOT NULL,
-    token        TEXT UNIQUE NOT NULL,
-    expire_after TEXT        NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES backoffice_users (id) ON DELETE CASCADE
+    user_id      integer     not null,
+    token        text unique not null,
+    expire_after text        not null,
+    foreign key (user_id) references backoffice_users (id) on delete cascade
 );
 
-CREATE TABLE url_redirect
+create table url_redirect
 (
-    id                 INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    url_path           TEXT UNIQUE                       NOT NULL,
-    url_redirect       TEXT UNIQUE                       NOT NULL,
-    created_at         TEXT                              NOT NULL,
-    created_by_user_id INTEGER                           NOT NULL,
-    FOREIGN KEY (created_by_user_id) REFERENCES backoffice_users (id) ON DELETE CASCADE
+    id                 integer primary key autoincrement not null,
+    url_path           text unique                       not null,
+    url_redirect       text unique                       not null,
+    created_at         text                              not null,
+    created_by_user_id integer                           not null,
+    foreign key (created_by_user_id) references backoffice_users (id) on delete cascade
 );
