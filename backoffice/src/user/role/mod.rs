@@ -92,10 +92,10 @@ impl Role {
         String::from(self)
     }
 
-    pub fn html_option(&self, current: Option<&Role>) -> Markup {
+    pub fn html_option(&self) -> Markup {
         html! {
             @for role in Self::all_roles() {
-                @if let Some(current) = current && self == current {
+                @if self == &role {
                     option value=(role.as_stringed()) selected {
                         (role.as_stringed())
                     }
