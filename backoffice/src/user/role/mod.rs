@@ -1,3 +1,4 @@
+use maud::{Markup, html};
 use serde::de::Visitor;
 use serde::{Deserialize, Serialize};
 
@@ -89,6 +90,22 @@ impl Role {
 
     pub fn as_stringed(&self) -> String {
         String::from(self)
+    }
+
+    pub fn html_option(&self, current: Option<&Role>) -> Markup {
+        html! {
+            @for role in Self::all_roles() {
+                @if let Some(current) = current && self == current {
+                    option value=(role.as_stringed()) selected {
+                        (role.as_stringed())
+                    }
+                } @else {
+                    option value=(role.as_stringed()) {
+                        (role.as_stringed())
+                    }
+                }
+            }
+        }
     }
 }
 
