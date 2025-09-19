@@ -1,9 +1,7 @@
 use crate::user::model::user_model::UserIdContext;
 use crate::user::role::Role;
-use crate::user::route::LOGIN_ROUTE;
 use poem::http::StatusCode;
-use poem::web::Redirect;
-use poem::{Endpoint, Error, FromRequest, IntoEndpoint, IntoResponse, Request, Response};
+use poem::{Endpoint, Error, FromRequest, IntoEndpoint, Request};
 use shared::context::Dep;
 
 struct UserRoleCheck<E: Endpoint>(Role, E);
@@ -14,11 +12,6 @@ impl<E: Endpoint> Endpoint for UserRoleCheck<E> {
     async fn call(&self, req: Request) -> poem::Result<Self::Output> {
         let Dep(user_context) = Dep::<UserIdContext>::from_request_without_body(&req).await?;
 
-        if user_context.role == Role::Visitor {
-            return Err(Error::from_response(
-                Redirect::see_other(LOGIN_ROUTE.to_owned() + "/").into_response(),
-            ));
-        }
         if user_context.role < self.0 {
             return Err(Error::from_status(StatusCode::UNAUTHORIZED));
         }
