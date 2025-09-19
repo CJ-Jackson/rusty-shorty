@@ -1,6 +1,6 @@
 use crate::user::model::user_model::UserIdContext;
 use crate::user::role::Role;
-use crate::user::route::LOGIN_ROUTE;
+use crate::user::route::login::LOGIN_ROUTE;
 use poem::http::StatusCode;
 use poem::web::Redirect;
 use poem::{Endpoint, Error, FromRequest, IntoEndpoint, IntoResponse, Request};

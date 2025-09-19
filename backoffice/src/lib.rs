@@ -6,7 +6,6 @@ use crate::common::embed::{AssetFilesEndPoint, EMBED_PATH};
 use crate::common::locale::build_locale_resources;
 use crate::home::home_route;
 use crate::user::model::user_model::UserIdContext;
-use crate::user::route::LOGIN_ROUTE;
 use crate::user::route::login::login_route;
 use error_stack::{Report, ResultExt};
 use poem::listener::TcpListener;
@@ -17,6 +16,7 @@ use shared::cache_local::init_cache_local;
 use shared::config::Config;
 use shared::csrf::{CSRF_PATH, route_csrf};
 use shared::error::boot_error::MainError;
+use user::route::login::LOGIN_ROUTE;
 
 pub mod error_export {
     pub use shared::error::boot_error::MainError;

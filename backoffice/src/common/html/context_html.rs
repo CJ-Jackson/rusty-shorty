@@ -1,7 +1,8 @@
 use crate::common::html::HtmlBuilder;
 use crate::user::model::user_model::UserIdContext;
 use crate::user::role::Role;
-use crate::user::route::{LOGIN_ROUTE, USER_ROUTE};
+use crate::user::route::login::LOGIN_ROUTE;
+use crate::user::route::user::USER_ROUTE;
 use error_stack::Report;
 use maud::{Markup, PreEscaped, html};
 use poem::i18n::Locale;

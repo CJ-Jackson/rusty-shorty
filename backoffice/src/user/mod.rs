@@ -1,4 +1,5 @@
 pub mod form;
+pub mod locale;
 pub mod model;
 pub mod repository;
 pub mod role;

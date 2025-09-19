@@ -78,3 +78,19 @@ where
         self.as_validate_store().as_original_message()
     }
 }
+
+pub trait LocaleExt {
+    fn text_with_default(&self, name: &str, default: &str) -> String;
+    fn text_with_default_args(&self, name: &str, default: &str, args: I18NArgs) -> String;
+}
+
+impl LocaleExt for Locale {
+    fn text_with_default(&self, name: &str, default: &str) -> String {
+        self.text(name).unwrap_or(default.to_string())
+    }
+
+    fn text_with_default_args(&self, name: &str, default: &str, args: I18NArgs) -> String {
+        self.text_with_args(name, args)
+            .unwrap_or(default.to_string())
+    }
+}
