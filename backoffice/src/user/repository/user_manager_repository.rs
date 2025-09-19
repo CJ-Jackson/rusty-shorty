@@ -41,7 +41,7 @@ impl UserManagerRepository {
             named_params! {
                 ":username": username,
                 ":password": password,
-                ":role": String::from(role),
+                ":role": role.as_stringed(),
             },
         )
         .change_context(UserManagerRepositoryError::QueryError)?;

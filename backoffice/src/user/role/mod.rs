@@ -86,6 +86,10 @@ impl Role {
     pub fn all_roles() -> Vec<Self> {
         vec![Self::Root, Self::User]
     }
+
+    pub fn as_stringed(&self) -> String {
+        String::from(self)
+    }
 }
 
 impl PartialOrd for Role {
