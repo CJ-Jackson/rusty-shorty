@@ -1,4 +1,5 @@
 pub mod context_html;
+pub mod locale;
 
 use crate::common::embed::AssetHidden;
 use maud::{DOCTYPE, Markup, PreEscaped, html};

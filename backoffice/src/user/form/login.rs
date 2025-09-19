@@ -36,6 +36,7 @@ pub struct UserLoginFormValidated {
     pub password: Password,
 }
 
+#[allow(dead_code)]
 pub struct UserLoginFormError {
     pub username: Result<Username, UsernameError>,
     pub password: Result<Password, PasswordError>,

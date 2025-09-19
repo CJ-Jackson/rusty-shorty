@@ -6,6 +6,7 @@ use shared::context::{Context, ContextError, FromContext};
 
 #[derive(Debug, Clone)]
 pub struct UserIdContext {
+    #[allow(dead_code)]
     pub id: i64,
     pub username: String,
     pub role: Role,

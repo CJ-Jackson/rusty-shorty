@@ -1,4 +1,5 @@
 use crate::common::html::HtmlBuilder;
+use crate::common::html::locale::top::TopBuildLocale;
 use crate::user::model::user_model::UserIdContext;
 use crate::user::role::Role;
 use crate::user::route::login::LOGIN_ROUTE;
@@ -8,12 +9,14 @@ use maud::{Markup, PreEscaped, html};
 use poem::i18n::Locale;
 use shared::context::{Context, ContextError, FromContext};
 use shared::flash::{Flash, FlashMessageHtml};
+use shared::locale::LocaleExt;
 use std::sync::RwLock;
 
 pub struct NavigationItem {
     name: String,
     url: String,
     tag: String,
+    locale: String,
 }
 
 impl NavigationItem {
@@ -23,11 +26,13 @@ impl NavigationItem {
                 name: "Home".to_string(),
                 url: "/".to_string(),
                 tag: "home".to_string(),
+                locale: "top-navigation-home".to_string(),
             },
             Self {
                 name: "User".to_string(),
                 url: "/user/".to_string(),
                 tag: "user".to_string(),
+                locale: "top-navigation-user".to_string(),
             },
         ]
         .into()
@@ -85,6 +90,7 @@ impl ContextHtmlBuilder {
         self
     }
 
+    #[allow(dead_code)]
     pub fn attach_head(&self, head: Markup) -> &Self {
         match self.data.try_write() {
             Ok(mut data) => {
@@ -95,6 +101,7 @@ impl ContextHtmlBuilder {
         self
     }
 
+    #[allow(dead_code)]
     pub fn attach_footer(&self, footer: Markup) -> &Self {
         match self.data.try_write() {
             Ok(mut data) => {
@@ -147,6 +154,7 @@ impl ContextHtmlBuilder {
 
     fn build_navigation(&self, tag: String) -> Markup {
         let user_context = &self.user_id_context;
+        let top_build_locale = TopBuildLocale::new(&self.locale, &user_context.username);
         html! {
             nav .nav-content {
                 span .nav-home {
@@ -155,9 +163,11 @@ impl ContextHtmlBuilder {
                 (self.parse_navigation(tag))
                 span .nav-user {
                     @if user_context.role >= Role::User {
-                        a href=(USER_ROUTE.to_owned() + "/") { "Hello, " (user_context.username) }
+                        a href=(USER_ROUTE.to_owned() + "/") { (top_build_locale.hello) }
+                        " "
+                        a href=(LOGIN_ROUTE.to_owned() + "/logout") { (top_build_locale.hello_logout) }
                     } @else {
-                        a href=(LOGIN_ROUTE.to_owned() + "/") { "You're a visitor, click here to login" }
+                        a href=(LOGIN_ROUTE.to_owned() + "/") { (top_build_locale.visitor) }
                     }
                 }
             }
@@ -170,13 +180,17 @@ impl ContextHtmlBuilder {
             let html = if item.tag == tag {
                 html! {
                     span .nav-item .nav-item-active {
-                        a href=(item.url) { (item.name) }
+                        a href=(item.url) {
+                            (self.locale.text_with_default(item.locale.as_str(), &item.name))
+                        }
                     }
                 }
             } else {
                 html! {
                     span .nav-item {
-                        a href=(item.url) { (item.name) }
+                        a href=(item.url) {
+                            (self.locale.text_with_default(item.locale.as_str(), &item.name))
+                        }
                     }
                 }
             };

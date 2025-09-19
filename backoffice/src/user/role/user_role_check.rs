@@ -28,6 +28,7 @@ where
     UserRoleCheck(Role::User, endpoint.into_endpoint())
 }
 
+#[allow(dead_code)]
 pub fn must_be_root<E>(endpoint: E) -> impl Endpoint
 where
     E: IntoEndpoint,

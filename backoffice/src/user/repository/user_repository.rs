@@ -80,12 +80,13 @@ impl UserRepository {
                     Ok(UserIdContext {
                         id: row.get("id")?,
                         username: row.get("username")?,
-                        role: Role::try_from(row.get::<_, String>("role")?.as_str()).unwrap_or_default(),
+                        role: Role::try_from(row.get::<_, String>("role")?.as_str())
+                            .unwrap_or_default(),
                     })
                 },
             )
             .optional()
-            .change_context(UserRepositoryError::QueryError)?;
+            .change_context(UserRepositoryError::RowValueError)?;
 
         match row {
             Some(row) => Ok(row),
@@ -116,7 +117,7 @@ impl UserRepository {
                 },
             )
             .optional()
-            .change_context(UserRepositoryError::QueryError)?;
+            .change_context(UserRepositoryError::RowValueError)?;
 
         match row {
             Some(row) => Ok(row),
