@@ -150,6 +150,31 @@ impl UserManagerRepository {
         Ok(())
     }
 
+    pub fn username_taken(
+        &self,
+        username: String,
+    ) -> Result<bool, Report<UserManagerRepositoryError>> {
+        let conn = self.borrow_conn()?;
+
+        let mut stmt = conn
+            .prepare_cached(include_str!(
+                "_sql/user_manager_repository/username_taken.sql"
+            ))
+            .change_context(UserManagerRepositoryError::QueryError)?;
+
+        let row: Option<bool> = stmt
+            .query_one(
+                named_params! {
+                    ":username": username
+                },
+                |row| Ok(row.get("taken")?),
+            )
+            .optional()
+            .change_context(UserManagerRepositoryError::RowValueError)?;
+
+        Ok(row.unwrap_or_default())
+    }
+
     fn borrow_conn(
         &'_ self,
     ) -> Result<MutexGuard<'_, Connection>, Report<UserManagerRepositoryError>> {
