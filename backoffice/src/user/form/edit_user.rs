@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use shared::locale::LocaleExtForResult;
 use std::sync::Arc;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Default)]
 pub struct EditUserForm {
     username: String,
     role: Role,
