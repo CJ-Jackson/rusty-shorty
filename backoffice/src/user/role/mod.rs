@@ -30,7 +30,7 @@ pub enum Role {
 
 impl Default for Role {
     fn default() -> Self {
-        Self::Visitor
+        Self::User
     }
 }
 
