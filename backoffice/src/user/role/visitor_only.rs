@@ -30,16 +30,26 @@ where
     VisitorOnly(endpoint.into_endpoint())
 }
 
-pub async fn redirect_if_visitor<E: Endpoint>(next: E, req: Request) -> poem::Result<E::Output> {
-    if req.uri().path().contains(LOGIN_ROUTE) {
-        return next.call(req).await;
-    }
-    let Dep(user_context) = Dep::<UserIdContext>::from_request_without_body(&req).await?;
-    if user_context.role == Role::Visitor {
-        return Err(Error::from_response(
-            Redirect::see_other(LOGIN_ROUTE).into_response(),
-        ));
-    }
+struct VisitorRedirect<E: Endpoint>(E);
 
-    next.call(req).await
+impl<E: Endpoint> Endpoint for VisitorRedirect<E> {
+    type Output = E::Output;
+
+    async fn call(&self, req: Request) -> poem::Result<Self::Output> {
+        let Dep(user_context) = Dep::<UserIdContext>::from_request_without_body(&req).await?;
+        if user_context.role == Role::Visitor {
+            return Err(Error::from_response(
+                Redirect::see_other(LOGIN_ROUTE).into_response(),
+            ));
+        }
+        self.0.call(req).await
+    }
+}
+
+pub fn visitor_redirect<E>(endpoint: E) -> impl Endpoint
+where
+    E: IntoEndpoint,
+    E::Endpoint: 'static,
+{
+    VisitorRedirect(endpoint.into_endpoint())
 }

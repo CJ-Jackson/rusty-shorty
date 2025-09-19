@@ -1,5 +1,6 @@
 use crate::common::embed::AssetFileEndPoint;
 use crate::common::html::context_html::ContextHtmlBuilder;
+use crate::user::role::visitor_only::visitor_redirect;
 use maud::{Markup, html};
 use poem::{Route, get, handler};
 use shared::context::Dep;
@@ -25,7 +26,7 @@ pub async fn home_page(Dep(context_html_builder): Dep<ContextHtmlBuilder>) -> Ma
 }
 
 pub fn home_route() -> Route {
-    Route::new().at("/", get(home_page)).at(
+    Route::new().at("/", visitor_redirect(get(home_page))).at(
         "/favicon.ico",
         AssetFileEndPoint::new("/favicon/favicon.ico"),
     )
