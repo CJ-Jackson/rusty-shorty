@@ -1,4 +1,3 @@
-use crate::user::form::add_user::AddUserValidated;
 use crate::user::model::user_manager_model::{FetchUser, ListUser};
 use crate::user::role::Role;
 use error_stack::{Report, ResultExt};
