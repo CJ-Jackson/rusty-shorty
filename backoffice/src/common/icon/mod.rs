@@ -13,3 +13,7 @@ pub fn pencil_square_icon() -> Markup {
 pub fn key_icon() -> Markup {
     PreEscaped(AssetHidden::get("icon/key.svg").as_string())
 }
+
+pub fn flag_icon() -> Markup {
+    PreEscaped(AssetHidden::get("icon/flag.svg").as_string())
+}

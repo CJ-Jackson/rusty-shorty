@@ -132,7 +132,6 @@ impl UserManagerRepository {
         Ok(users.into())
     }
 
-    #[allow(dead_code)]
     pub fn revoke_all_token_by_id(
         &self,
         user_id: i64,
