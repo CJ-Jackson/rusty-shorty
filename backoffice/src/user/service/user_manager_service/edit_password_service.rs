@@ -1,6 +1,6 @@
 use crate::user::form::edit_password_manager::EditPasswordManagerValidated;
+use crate::user::model::user_manager_model::FetchUser;
 use crate::user::repository::user_manager_repository::UserManagerRepository;
-use crate::user::service::user_manager_service::add_user_service::AddUserServiceError;
 use error_stack::{Report, ResultExt};
 use shared::context::{Context, ContextError, FromContext};
 use shared::password::Password;
@@ -52,6 +52,13 @@ impl EditPasswordService {
             .change_context(EditPasswordServiceError::DbError)?;
 
         Ok(())
+    }
+
+    pub fn fetch_user(&self, user_id: i64) -> Result<FetchUser, Report<EditPasswordServiceError>> {
+        self.user_manager_repository
+            .fetch_user(user_id)
+            .change_context(EditPasswordServiceError::UserNotFound)?
+            .ok_or_else(|| Report::new(EditPasswordServiceError::UserNotFound))
     }
 
     fn hash_password(&self, password: &str) -> Result<Password, Report<EditPasswordServiceError>> {
