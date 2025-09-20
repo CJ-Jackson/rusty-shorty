@@ -4,11 +4,11 @@ user-form-title-edit-password = Edit User Password
 
 
 user-form-username = Username:
-    .placeholder = Username
+user-form-username-placeholder = Username
 user-form-password = Password:
-    .placeholder = Password
+user-form-password-placeholder = Password
 user-form-password-confirm = Password Confirm:
-    .placeholder = Password Confirm
+user-form-password-confirm-placeholder = Password Confirm
 user-form-password-current = Current Password:
-    .placeholder = Current
+user-form-password-current-placeholder = Current
 user-form-role = Role:

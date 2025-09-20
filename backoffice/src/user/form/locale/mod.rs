@@ -23,14 +23,14 @@ impl UserFormLocale {
                 .text_with_default("user-form-title-edit-password", "Edit User Password"),
             username: locale.text_with_default("user-form-username", "Username:"),
             username_placeholder: locale
-                .text_with_default("user-form-username.placeholder", "Username"),
+                .text_with_default("user-form-username-placeholder", "Username"),
             password: locale.text_with_default("user-form-password", "Password:"),
             password_placeholder: locale
-                .text_with_default("user-form-password.placeholder", "Password"),
+                .text_with_default("user-form-password-placeholder", "Password"),
             password_confirm: locale
                 .text_with_default("user-form-password-confirm", "Password Confirm:"),
             password_confirm_placeholder: locale
-                .text_with_default("user-form-password-confirm", "Password Confirm"),
+                .text_with_default("user-form-password-confirm-placeholder", "Password Confirm"),
             role: locale.text_with_default("user-form-role", "Role:"),
         }
     }

@@ -367,5 +367,5 @@ pub fn user_route() -> Route {
             "/add-user",
             must_be_root(get(add_user_password_get).post(add_user_password_post)),
         )
-        .at("/sign-out/:user_id", must_be_user(get(sign_out_user)))
+        .at("/sign-out/:user_id", must_be_root(get(sign_out_user)))
 }
