@@ -1,5 +1,5 @@
 use crate::context::{Context, ContextError, FromContext};
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local, Utc};
 use cjtoolkit_structured_validator::common::locale::{LocaleData, LocaleValue, ValidateErrorStore};
 use cjtoolkit_structured_validator::common::validation_collector::AsValidateErrorStore;
 use error_stack::{Report, ResultExt};
@@ -97,11 +97,11 @@ impl LocaleExt for Locale {
 }
 
 pub trait LocaleDateTimeExt {
-    fn date_time_format(&self, date_time: impl Into<DateTime<Utc>>) -> String;
+    fn date_time_format(&self, date_time: impl Into<DateTime<Local>>) -> String;
 }
 
 impl LocaleDateTimeExt for Locale {
-    fn date_time_format(&self, date_time: impl Into<DateTime<Utc>>) -> String {
+    fn date_time_format(&self, date_time: impl Into<DateTime<Local>>) -> String {
         let date_time = date_time.into();
         self.text_with_args("top-date-time", (("date", date_time.to_rfc3339()),))
             .unwrap_or(date_time.to_rfc3339())
