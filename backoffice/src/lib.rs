@@ -7,6 +7,7 @@ use crate::common::locale::build_locale_resources;
 use crate::home::home_route;
 use crate::user::model::user_model::UserIdContext;
 use crate::user::route::login::login_route;
+use crate::user::route::user::{USER_ROUTE, user_route};
 use error_stack::{Report, ResultExt};
 use poem::listener::TcpListener;
 use poem::middleware::{CookieJarManager, Csrf};
@@ -31,6 +32,7 @@ pub async fn boot() -> Result<(), Report<MainError>> {
 
     let route = route
         .nest(LOGIN_ROUTE, login_route())
+        .nest(USER_ROUTE, user_route())
         .nest(CSRF_PATH, route_csrf())
         .nest(EMBED_PATH, AssetFilesEndPoint::new());
 

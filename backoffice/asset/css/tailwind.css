@@ -11,21 +11,22 @@
         font-weight: var(--font-weight-semibold);
     }
 
-    .btn {
-        @apply flex font-bold py-2 px-4 rounded justify-center items-center;
-
-        svg {
-            @apply inline-block max-h-4 max-w-4 ml-1;
-        }
-    }
-
-    .btn-sky-blue {
-        @apply bg-sky-500 hover:bg-sky-700 text-white;
-    }
 
     .ul-bullet {
         list-style: disc;
     }
+}
+
+@utility btn {
+    @apply flex font-bold py-2 px-4 rounded justify-center items-center;
+
+    svg {
+        @apply inline-block max-h-4 max-w-4 ml-1;
+    }
+}
+
+@utility btn-sky-blue {
+    @apply bg-sky-500 hover:bg-sky-700 text-white;
 }
 
 [v-cloak] {
@@ -109,5 +110,25 @@ body {
 
     .validation-error-message {
         @apply text-sm list-disc list-inside;
+    }
+}
+
+.table-full {
+    @apply w-full text-left table-auto mt-3 border-separate border-spacing-2 ;
+
+    thead tr th {
+        @apply font-bold p-4 dark:bg-gray-700 bg-gray-200 rounded-2xl;
+    }
+
+    tbody tr td, tbody tr th {
+        @apply p-4 dark:bg-gray-700 bg-gray-200 rounded-2xl;
+    }
+
+    .action {
+        @apply text-right;
+
+        .icon {
+            @apply inline-block ml-2 size-5!;
+        }
     }
 }
