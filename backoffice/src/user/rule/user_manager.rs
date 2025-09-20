@@ -8,6 +8,26 @@ use cjtoolkit_structured_validator::types::username::{
 use paspio::entropy;
 use std::sync::Arc;
 
+struct UsernameReservedLocale;
+
+impl LocaleMessage for UsernameReservedLocale {
+    fn get_locale_data(&self) -> Arc<LocaleData> {
+        LocaleData::new("validate-username-reserved")
+    }
+}
+
+fn check_username_is_reserved(username: &str) -> Result<(), UsernameError> {
+    if username == "visitor" {
+        let mut messages = ValidateErrorCollector::new();
+        messages.push((
+            "Username is reserved".to_string(),
+            Box::new(UsernameReservedLocale),
+        ));
+        UsernameError::validate_check(messages)?;
+    }
+    Ok(())
+}
+
 pub trait UsernameUserManagerRulesExt {
     fn parse_user_add<T: IsUsernameTakenAsync>(
         username: Option<&str>,
@@ -29,6 +49,7 @@ impl UsernameUserManagerRulesExt for Username {
                     return username;
                 }
             }
+            check_username_is_reserved(username_ref.as_str())?;
             username = username_ref.check_username_taken_async(service).await;
         }
         username

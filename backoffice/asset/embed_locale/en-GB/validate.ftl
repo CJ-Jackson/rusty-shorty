@@ -37,3 +37,5 @@ validate-date-time-naive-max = Must be before { $max }
 validate-time-max = Must be before { $max }
 
 validate-password-entropy = Password entropy score must be over { $min }
+
+validate-username-reserved = Username is reserved

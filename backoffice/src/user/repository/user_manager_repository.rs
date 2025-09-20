@@ -1,4 +1,4 @@
-use crate::user::model::user_manager_model::{FetchUser, ListUser};
+use crate::user::model::user_manager_model::{FetchPassword, FetchUser, ListUser};
 use crate::user::role::Role;
 use error_stack::{Report, ResultExt};
 use rusqlite::{Connection, OptionalExtension, named_params};
@@ -173,6 +173,34 @@ impl UserManagerRepository {
             .change_context(UserManagerRepositoryError::RowValueError)?;
 
         Ok(row.unwrap_or_default())
+    }
+
+    pub fn fetch_password(
+        &self,
+        user_id: i64,
+    ) -> Result<FetchPassword, Report<UserManagerRepositoryError>> {
+        let conn = self.borrow_conn()?;
+
+        let mut stmt = conn
+            .prepare_cached(include_str!(
+                "_sql/user_manager_repository/fetch_password.sql"
+            ))
+            .change_context(UserManagerRepositoryError::QueryError)?;
+
+        let row = stmt
+            .query_one(
+                named_params! {
+                    ":id": user_id
+                },
+                |row| {
+                    Ok(FetchPassword {
+                        password: row.get("password")?,
+                    })
+                },
+            )
+            .change_context(UserManagerRepositoryError::RowValueError)?;
+
+        Ok(row)
     }
 
     fn borrow_conn(

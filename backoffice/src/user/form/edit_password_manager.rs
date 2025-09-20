@@ -1,6 +1,5 @@
 use crate::common::html::context_html::ContextHtmlBuilder;
 use crate::common::html::validate::ValidateErrorMessageExt;
-use crate::user::form::add_user::AddUserMessage;
 use crate::user::form::locale::UserFormLocale;
 use crate::user::rule::user_manager::PasswordUserManagerRulesExt;
 use cjtoolkit_structured_validator::common::flag_error::FlagCounter;
@@ -12,16 +11,15 @@ use shared::locale::LocaleExtForResult;
 use std::sync::Arc;
 
 #[derive(Deserialize, Default)]
-pub struct EditPasswordForm {
-    password_current: String,
-    password: String,
-    password_confirm: String,
-    csrf_token: String,
+pub struct EditPasswordManagerForm {
+    pub password: String,
+    pub password_confirm: String,
+    pub csrf_token: String,
 }
 
-impl EditPasswordForm {
-    pub async fn as_validated(&self) -> EditPasswordResult {
-        EditPasswordResult(
+impl EditPasswordManagerForm {
+    pub async fn as_validated(&self) -> EditPasswordManagerResult {
+        EditPasswordManagerResult(
             async {
                 let mut flag = FlagCounter::new();
 
@@ -31,13 +29,13 @@ impl EditPasswordForm {
                 let password_confirm = flag.check(password_confirm);
 
                 if flag.is_flagged() {
-                    return Err(EditPasswordError {
+                    return Err(EditPasswordManagerError {
                         password,
                         password_confirm,
                     });
                 }
 
-                Ok(EditPasswordValidated {
+                Ok(EditPasswordManagerValidated {
                     password: password.expect("Password is not empty"),
                     password_confirm: password_confirm.expect("Password Confirm is not empty"),
                 })
@@ -49,7 +47,7 @@ impl EditPasswordForm {
     pub async fn as_form_html(
         &self,
         context_html_builder: &ContextHtmlBuilder,
-        errors: Option<EditPasswordMessage>,
+        errors: Option<EditPasswordManagerMessage>,
         token: Option<Markup>,
     ) -> Markup {
         let errors = errors.unwrap_or_default();
@@ -59,11 +57,6 @@ impl EditPasswordForm {
             h1 .mt-3 { (user_form_locale.title_edit_password) }
             form .form {
                 (token)
-                div .form-group {
-                    label for="password-current" { (user_form_locale.password_current) }
-                    input .form-item type="password" name="password_current" id="password-current"
-                    placeholder=(user_form_locale.password_current_placeholder) {}
-                }
                 div .form-group {
                     label for="password" { (user_form_locale.password) }
                     input .form-item type="password" name="password" id="password"
@@ -84,29 +77,31 @@ impl EditPasswordForm {
     }
 }
 
-pub struct EditPasswordValidated {
-    password: Password,
-    password_confirm: Password,
+pub struct EditPasswordManagerValidated {
+    pub password: Password,
+    pub password_confirm: Password,
 }
 
-pub struct EditPasswordError {
-    password: Result<Password, PasswordError>,
-    password_confirm: Result<Password, PasswordError>,
+pub struct EditPasswordManagerError {
+    pub password: Result<Password, PasswordError>,
+    pub password_confirm: Result<Password, PasswordError>,
 }
 
-impl EditPasswordError {
-    pub fn as_message(&self, locale: &Locale) -> EditPasswordMessage {
-        EditPasswordMessage {
+impl EditPasswordManagerError {
+    pub fn as_message(&self, locale: &Locale) -> EditPasswordManagerMessage {
+        EditPasswordManagerMessage {
             password: self.password.as_translated_message(locale),
             password_confirm: self.password_confirm.as_translated_message(locale),
         }
     }
 }
 
-pub struct EditPasswordResult(pub Result<EditPasswordValidated, EditPasswordError>);
+pub struct EditPasswordManagerResult(
+    pub Result<EditPasswordManagerValidated, EditPasswordManagerError>,
+);
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct EditPasswordMessage {
-    password: Arc<[String]>,
-    password_confirm: Arc<[String]>,
+pub struct EditPasswordManagerMessage {
+    pub password: Arc<[String]>,
+    pub password_confirm: Arc<[String]>,
 }

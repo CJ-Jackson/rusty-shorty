@@ -16,11 +16,11 @@ use std::sync::Arc;
 
 #[derive(Deserialize, Default)]
 pub struct AddUserForm {
-    username: String,
-    password: String,
-    password_confirm: String,
-    role: Role,
-    csrf_token: String,
+    pub username: String,
+    pub password: String,
+    pub password_confirm: String,
+    pub role: Role,
+    pub csrf_token: String,
 }
 
 impl AddUserForm {
@@ -102,17 +102,17 @@ impl AddUserForm {
 }
 
 pub struct AddUserValidated {
-    username: Username,
-    password: Password,
-    password_confirm: Password,
-    role: Role,
+    pub username: Username,
+    pub password: Password,
+    pub password_confirm: Password,
+    pub role: Role,
 }
 
 pub struct AddUserError {
-    username: Result<Username, UsernameError>,
-    password: Result<Password, PasswordError>,
-    password_confirm: Result<Password, PasswordError>,
-    role: Role,
+    pub username: Result<Username, UsernameError>,
+    pub password: Result<Password, PasswordError>,
+    pub password_confirm: Result<Password, PasswordError>,
+    pub role: Role,
 }
 
 impl AddUserError {
@@ -129,7 +129,7 @@ pub struct AddUserResult(pub Result<AddUserValidated, AddUserError>);
 
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct AddUserMessage {
-    username: Arc<[String]>,
-    password: Arc<[String]>,
-    password_confirm: Arc<[String]>,
+    pub username: Arc<[String]>,
+    pub password: Arc<[String]>,
+    pub password_confirm: Arc<[String]>,
 }

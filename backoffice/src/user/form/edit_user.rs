@@ -89,13 +89,13 @@ impl EditUserForm {
 }
 
 pub struct EditUserValidated {
-    username: Username,
-    role: Role,
+    pub username: Username,
+    pub role: Role,
 }
 
 pub struct EditUserError {
-    username: Result<Username, UsernameError>,
-    role: Role,
+    pub username: Result<Username, UsernameError>,
+    pub role: Role,
 }
 
 impl EditUserError {
@@ -110,5 +110,5 @@ pub struct EditUserResult(pub Result<EditUserValidated, EditUserError>);
 
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct EditUserMessage {
-    username: Arc<[String]>,
+    pub username: Arc<[String]>,
 }
