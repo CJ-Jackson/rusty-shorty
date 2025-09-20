@@ -59,7 +59,6 @@ impl TryFrom<&str> for Role {
         match s {
             "root" => Ok(Self::Root),
             "user" => Ok(Self::User),
-            "visitor" => Ok(Self::Visitor),
             _ => Err(()),
         }
     }
