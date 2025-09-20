@@ -1,5 +1,6 @@
 use crate::user::form::add_user::AddUserValidated;
 use crate::user::repository::user_manager_repository::UserManagerRepository;
+use cjtoolkit_structured_validator::types::username::IsUsernameTakenAsync;
 use error_stack::{Report, ResultExt};
 use shared::context::{Context, ContextError, FromContext};
 use shared::password::Password;
@@ -45,6 +46,15 @@ impl AddUserService {
     fn hash_password(&self, password: &str) -> Result<Password, Report<AddUserServiceError>> {
         Password::hash_password(password.to_string())
             .change_context(AddUserServiceError::PasswordHashError)
+    }
+}
+
+impl IsUsernameTakenAsync for AddUserService {
+    async fn is_username_taken_async(&self, username: &str) -> bool {
+        self.user_manager_repository
+            .username_taken(username.to_string())
+            .ok()
+            .unwrap_or_default()
     }
 }
 

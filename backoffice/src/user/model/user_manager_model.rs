@@ -13,6 +13,7 @@ pub struct FetchUser {
     pub role: Role,
 }
 
+#[allow(dead_code)]
 pub struct FetchPassword {
     pub password: Box<[u8]>,
 }

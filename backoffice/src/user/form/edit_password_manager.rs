@@ -49,36 +49,43 @@ impl EditPasswordManagerForm {
         context_html_builder: &ContextHtmlBuilder,
         errors: Option<EditPasswordManagerMessage>,
         token: Option<Markup>,
+        username: Option<String>,
     ) -> Markup {
         let errors = errors.unwrap_or_default();
         let token = token.unwrap_or_default();
         let user_form_locale = UserFormLocale::new(&context_html_builder.locale);
-        context_html_builder.attach_title(&user_form_locale.title_edit_password).attach_content(html! {
-            h1 .mt-3 { (user_form_locale.title_edit_password) }
-            form .form {
-                (token)
-                div .form-group {
-                    label for="password" { (user_form_locale.password) }
-                    input .form-item type="password" name="password" id="password"
-                    placeholder=(user_form_locale.password_placeholder) {}
-                    (errors.password.into_error_html())
+        let username = username.unwrap_or_default();
+        context_html_builder
+            .attach_title(&user_form_locale.title_edit_password)
+            .attach_content(html! {
+                h1 .mt-3 { (user_form_locale.title_edit_password) }
+                h2 { (username) }
+                form .form method="post" {
+                    (token)
+                    div .form-group {
+                        label .label for="password" { (user_form_locale.password) }
+                        input .form-item .w-full type="password" name="password" #password
+                        placeholder=(user_form_locale.password_placeholder) {}
+                        (errors.password.into_error_html())
+                    }
+                    div .form-group {
+                        label .label for="password-confirm" { (user_form_locale.password_confirm) }
+                        input .form-item .w-full type="password" name="password_confirm" #password-confirm
+                        placeholder=(user_form_locale.password_confirm_placeholder) {}
+                        (errors.password_confirm.into_error_html())
+                    }
+                    div .form-group {
+                        input .btn .btn-sky-blue type="submit" value="Submit" {}
+                    }
                 }
-                div .form-group {
-                    label for="password-confirm" { (user_form_locale.password_confirm) }
-                    input .form-item type="password" name="password_confirm" id="password-confirm"
-                    placeholder=(user_form_locale.password_confirm_placeholder) {}
-                    (errors.password_confirm.into_error_html())
-                }
-                div .form-group {
-                    input .btn .btn-sky-blue type="submit" value="Submit" {}
-                }
-            }
-        }).build()
+            })
+            .build()
     }
 }
 
 pub struct EditPasswordManagerValidated {
     pub password: Password,
+    #[allow(dead_code)]
     pub password_confirm: Password,
 }
 

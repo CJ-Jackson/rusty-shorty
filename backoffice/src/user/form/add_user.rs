@@ -65,45 +65,49 @@ impl AddUserForm {
         let errors = errors.unwrap_or_default();
         let token = token.unwrap_or_default();
         let user_form_locale = UserFormLocale::new(&context_html_builder.locale);
-        context_html_builder.attach_title(&user_form_locale.title_add).attach_content(html! {
-            h1 .mt-3 { (user_form_locale.title_add) }
-            form .form {
-                (token)
-                div .form-group {
-                    label for="username" { (user_form_locale.username) }
-                    input .form-item type="text" name="username" id="username" value=(self.username)
-                    placeholder=(user_form_locale.username_placeholder) {}
-                    (errors.username.into_error_html())
-                }
-                div .form-group {
-                    label for="password" { (user_form_locale.password) }
-                    input .form-item type="password" name="password" id="password"
-                    placeholder=(user_form_locale.password_placeholder) {}
-                    (errors.password.into_error_html())
-                }
-                div .form-group {
-                    label for="password-confirm" { (user_form_locale.password_confirm) }
-                    input .form-item type="password" name="password_confirm" id="password-confirm"
-                    placeholder=(user_form_locale.password_confirm_placeholder) {}
-                    (errors.password_confirm.into_error_html())
-                }
-                div .form-group {
-                    label for="role" { "Role" }
-                    select .form-item name="role" id="role" {
-                        (self.role.html_option())
+        context_html_builder
+            .attach_title(&user_form_locale.title_add)
+            .attach_content(html! {
+                h1 .mt-3 { (user_form_locale.title_add) }
+                form .form method="post" {
+                    (token)
+                    div .form-group {
+                        label .label for="username" { (user_form_locale.username) }
+                        input .form-item .w-full type="text" name="username" #username value=(self.username)
+                        placeholder=(user_form_locale.username_placeholder) {}
+                        (errors.username.into_error_html())
+                    }
+                    div .form-group {
+                        label .label for="password" { (user_form_locale.password) }
+                        input .form-item .w-full type="password" name="password" #password
+                        placeholder=(user_form_locale.password_placeholder) {}
+                        (errors.password.into_error_html())
+                    }
+                    div .form-group {
+                        label .label for="password-confirm" { (user_form_locale.password_confirm) }
+                        input .form-item .w-full type="password" name="password_confirm" #password-confirm
+                        placeholder=(user_form_locale.password_confirm_placeholder) {}
+                        (errors.password_confirm.into_error_html())
+                    }
+                    div .form-group {
+                        label .label for="role" { "Role" }
+                        select .form-item .w-full name="role" #role {
+                            (self.role.html_option())
+                        }
+                    }
+                    div .form-group {
+                        input .btn .btn-sky-blue type="submit" value="Add" {}
                     }
                 }
-                div .form-group {
-                    input .btn .btn-sky-blue type="submit" value="Add" {}
-                }
-            }
-        }).build()
+            })
+            .build()
     }
 }
 
 pub struct AddUserValidated {
     pub username: Username,
     pub password: Password,
+    #[allow(dead_code)]
     pub password_confirm: Password,
     pub role: Role,
 }
@@ -112,6 +116,7 @@ pub struct AddUserError {
     pub username: Result<Username, UsernameError>,
     pub password: Result<Password, PasswordError>,
     pub password_confirm: Result<Password, PasswordError>,
+    #[allow(dead_code)]
     pub role: Role,
 }
 

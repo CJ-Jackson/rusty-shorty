@@ -1,6 +1,7 @@
 use crate::user::form::edit_user::EditUserValidated;
 use crate::user::model::user_manager_model::FetchUser;
 use crate::user::repository::user_manager_repository::UserManagerRepository;
+use cjtoolkit_structured_validator::types::username::IsUsernameTakenAsync;
 use error_stack::{Report, ResultExt};
 use shared::context::{Context, ContextError, FromContext};
 use thiserror::Error;
@@ -44,6 +45,15 @@ impl EditUserService {
             .fetch_user(user_id)
             .change_context(EditUserServiceError::UserNotFound)?
             .ok_or_else(|| Report::new(EditUserServiceError::UserNotFound))
+    }
+}
+
+impl IsUsernameTakenAsync for EditUserService {
+    async fn is_username_taken_async(&self, username: &str) -> bool {
+        self.user_manager_repository
+            .username_taken(username.to_string())
+            .ok()
+            .unwrap_or_default()
     }
 }
 

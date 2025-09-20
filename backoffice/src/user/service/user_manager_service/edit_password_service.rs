@@ -8,8 +8,6 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum EditPasswordServiceError {
-    #[error("Old Password is incorrect")]
-    InvalidCurrentPassword,
     #[error("User not found")]
     UserNotFound,
     #[error("Database error")]
@@ -18,12 +16,6 @@ pub enum EditPasswordServiceError {
     PasswordHashError,
     #[error("Password Serialize Error")]
     PasswordSerializeError,
-}
-
-impl EditPasswordServiceError {
-    pub fn is_invalid_current_password(&self) -> bool {
-        matches!(self, EditPasswordServiceError::InvalidCurrentPassword)
-    }
 }
 
 pub struct EditPasswordService {

@@ -15,8 +15,6 @@ pub enum UserManagerRepositoryError {
     RowValueError,
     #[error("Lock error")]
     LockError,
-    #[error("Not found error")]
-    NotFoundError,
 }
 
 pub struct UserManagerRepository {
@@ -134,6 +132,7 @@ impl UserManagerRepository {
         Ok(users.into())
     }
 
+    #[allow(dead_code)]
     pub fn revoke_all_token_by_id(
         &self,
         user_id: i64,
@@ -175,6 +174,7 @@ impl UserManagerRepository {
         Ok(row.unwrap_or_default())
     }
 
+    #[allow(dead_code)]
     pub fn fetch_password(
         &self,
         user_id: i64,

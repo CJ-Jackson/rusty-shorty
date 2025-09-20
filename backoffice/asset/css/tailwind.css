@@ -100,8 +100,12 @@ body {
 .form {
     @apply flex flex-col;
 
-    .form-item {
-        @apply mb-2 text-lg dark:border-blue-950 border-b-gray-600 border-2 rounded pl-2;
+    .label {
+        @apply font-bold inline-block mb-1;
+    }
+
+    .form-item, .form-group .form-item {
+        @apply mb-2 text-lg dark:bg-gray-700 bg-gray-200 rounded p-2;
     }
 }
 

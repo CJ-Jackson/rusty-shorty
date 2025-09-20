@@ -11,8 +11,6 @@ pub struct UserFormLocale {
     pub password_placeholder: String,
     pub password_confirm: String,
     pub password_confirm_placeholder: String,
-    pub password_current: String,
-    pub password_current_placeholder: String,
     pub role: String,
 }
 
@@ -33,10 +31,6 @@ impl UserFormLocale {
                 .text_with_default("user-form-password-confirm", "Password Confirm:"),
             password_confirm_placeholder: locale
                 .text_with_default("user-form-password-confirm", "Password Confirm"),
-            password_current: locale
-                .text_with_default("user-form-password-current", "Current Password:"),
-            password_current_placeholder: locale
-                .text_with_default("user-form-password-current.placeholder", "Current Password"),
             role: locale.text_with_default("user-form-role", "Role:"),
         }
     }
