@@ -28,6 +28,6 @@ pub async fn home_page(Dep(context_html_builder): Dep<ContextHtmlBuilder>) -> Ma
 pub fn home_route() -> Route {
     Route::new().at("/", visitor_redirect(get(home_page))).at(
         "/favicon.ico",
-        AssetFileEndPoint::new("/favicon/favicon.ico"),
+        AssetFileEndPoint::new("favicon/favicon.ico"),
     )
 }

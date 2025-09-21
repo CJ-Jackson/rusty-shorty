@@ -3,6 +3,9 @@ pub mod boot_error;
 use error_stack::{Report, ResultExt};
 use poem::error::ResponseError;
 use poem::http::StatusCode;
+use poem::web::Json;
+use poem::{IntoResponse, Response};
+use serde_json::json;
 use std::error::Error;
 use std::fmt::{Debug, Display};
 use thiserror::Error;
@@ -139,6 +142,8 @@ where
     }
 }
 
+pub struct ErrorStackUseJson;
+
 struct ErrorStack<T>(Report<T>);
 
 impl<T> Debug for ErrorStack<T> {
@@ -160,6 +165,30 @@ impl<T> ResponseError for ErrorStack<T> {
         match self.0.downcast_ref::<StatusCode>() {
             Some(status) => *status,
             None => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+
+    fn as_response(&self) -> Response
+    where
+        Self: Error + Send + Sync + 'static,
+    {
+        let body = if cfg!(debug_assertions) {
+            format!("{:?}", self.0)
+        } else {
+            format!("{:#}", self.0)
+        };
+        match self.0.downcast_ref::<ErrorStackUseJson>() {
+            Some(_) => {
+                let json = Json(json!({"msg": body}));
+                let mut resp = json.into_response();
+                resp.set_status(self.status());
+                resp
+            }
+            None => {
+                let mut resp = body.into_response();
+                resp.set_status(self.status());
+                resp
+            }
         }
     }
 }
