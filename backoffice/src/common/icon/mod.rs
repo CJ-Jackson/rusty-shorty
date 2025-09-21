@@ -17,3 +17,7 @@ pub fn key_icon() -> Markup {
 pub fn flag_icon() -> Markup {
     PreEscaped(AssetHidden::get("icon/flag.svg").as_string())
 }
+
+pub fn trash_icon() -> Markup {
+    PreEscaped(AssetHidden::get("icon/trash.svg").as_string())
+}
