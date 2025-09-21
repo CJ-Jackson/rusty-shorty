@@ -78,7 +78,7 @@ impl AddEditUrlForm {
                     (errors.url_redirect.into_error_html())
                 }
                 div .form-group {
-                    input .btn .btn-sky-blue type="submit" value="Save" {}
+                    input .btn .btn-sky-blue type="submit" value=(&user_form_locale.submit_button) {}
                 }
             }
         }).build()
