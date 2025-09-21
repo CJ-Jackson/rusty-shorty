@@ -43,6 +43,7 @@ async fn list_users(
 
     context_html_builder
         .attach_title(&user_locale.user_list_title)
+        .set_current_tag("user")
         .attach_content(html! {
             h1 { (&user_locale.user_list_title) }
             table .table-full {

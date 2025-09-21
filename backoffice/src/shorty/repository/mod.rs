@@ -1,1 +1,1 @@
-mod shorty_repository;
+pub mod shorty_repository;

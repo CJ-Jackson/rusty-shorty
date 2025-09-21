@@ -37,3 +37,5 @@ validate-date-time-naive-max = Must be before { $max }
 validate-time-max = Must be before { $max }
 
 validate-username-reserved = Username is reserved
+
+validate-must-be-kabab-case = Must be kabab case
