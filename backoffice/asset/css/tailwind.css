@@ -29,12 +29,16 @@
     @apply bg-sky-500 hover:bg-sky-700 text-white;
 }
 
+@utility tint-bg {
+    @apply bg-black/10 dark:bg-white/10;
+}
+
 [v-cloak] {
     display: none;
 }
 
 body {
-    @apply bg-blue-400 dark:bg-blue-950;
+    @apply bg-blue-300 dark:bg-blue-950;
 }
 
 .nav-content {
@@ -61,26 +65,6 @@ body {
     @apply bg-white rounded-2xl dark:bg-gray-800 dark:text-white mt-3 px-7 py-7 mx-auto;
 }
 
-.bucket-list-item, .bucket-list-header, .bucket-form, .bucket-form-error {
-    @apply flex mb-1;
-
-    .bucket-list-col {
-        @apply flex-1 mx-1;
-    }
-}
-
-.bucket-list-header {
-    @apply font-bold;
-}
-
-.bucket-form input {
-    @apply border border-gray-200 p-3 rounded-2xl;
-}
-
-.bucket-form-error {
-    @apply text-red-500;
-}
-
 .flash-message {
     @apply fixed bottom-0 left-0 right-0 text-white p-4 text-center z-10;
 }
@@ -105,7 +89,7 @@ body {
     }
 
     .form-item, .form-group .form-item {
-        @apply mb-2 text-lg dark:bg-gray-700 bg-gray-200 rounded p-2;
+        @apply mb-2 text-lg tint-bg rounded p-2;
     }
 }
 
@@ -121,11 +105,11 @@ body {
     @apply w-full text-left table-auto mt-3 border-separate border-spacing-2 ;
 
     thead tr th {
-        @apply font-bold p-4 dark:bg-gray-700 bg-gray-200 rounded-2xl;
+        @apply font-bold p-4 tint-bg rounded-2xl;
     }
 
     tbody tr td, tbody tr th {
-        @apply p-4 dark:bg-gray-700 bg-gray-200 rounded-2xl;
+        @apply p-4 tint-bg rounded-2xl;
     }
 
     .action {
