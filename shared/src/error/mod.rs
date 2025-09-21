@@ -1,8 +1,10 @@
 pub mod boot_error;
 
 use error_stack::{Report, ResultExt};
+use poem::error::ResponseError;
+use poem::http::StatusCode;
 use std::error::Error;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 use thiserror::Error;
 
 pub trait FromIntoStackError: Error + Sized + Send + Sync + 'static {
@@ -134,5 +136,45 @@ where
                 Err(report.change_context(context))
             }
         }
+    }
+}
+
+struct ErrorStack<T>(Report<T>);
+
+impl<T> Debug for ErrorStack<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(&self.0, f)
+    }
+}
+
+impl<T> Display for ErrorStack<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.0, f)
+    }
+}
+
+impl<T> Error for ErrorStack<T> {}
+
+impl<T> ResponseError for ErrorStack<T> {
+    fn status(&self) -> StatusCode {
+        match self.0.downcast_ref::<StatusCode>() {
+            Some(status) => *status,
+            None => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+}
+
+pub trait FromErrorStack: Sized {
+    fn from_error_stack<T>(err: Report<T>) -> Self
+    where
+        T: Send + Sync + 'static;
+}
+
+impl FromErrorStack for poem::Error {
+    fn from_error_stack<T>(err: Report<T>) -> Self
+    where
+        T: Send + Sync + 'static,
+    {
+        Self::from(ErrorStack(err))
     }
 }

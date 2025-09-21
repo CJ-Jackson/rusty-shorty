@@ -17,6 +17,7 @@ use poem::{Error, IntoResponse, Route, get, handler};
 use shared::context::Dep;
 use shared::csrf::CsrfTokenHtml;
 use shared::embed::EmbedAsString;
+use shared::error::FromErrorStack;
 use shared::flash::{Flash, FlashMessage};
 use shared::query_string::form::FormQs;
 
@@ -120,13 +121,13 @@ async fn edit_url_get(
 ) -> poem::Result<Markup> {
     let subject_id = edit_url_service
         .fetch_user_id_from_url_id(url_id)
-        .map_err(|_| Error::from_status(StatusCode::NOT_FOUND))?;
+        .map_err(Error::from_error_stack)?;
     if user_id_context.role < Role::Root && user_id_context.id != subject_id.created_by_user_id {
         return Err(Error::from_status(StatusCode::FORBIDDEN));
     }
     let subject_url = edit_url_service
         .get_url_redirect(url_id)
-        .map_err(|_| Error::from_status(StatusCode::NOT_FOUND))?;
+        .map_err(Error::from_error_stack)?;
 
     let mut edit_url = AddEditUrlForm::default();
     edit_url.url_path = subject_url.url_path;
@@ -155,7 +156,7 @@ async fn edit_url_post(
 ) -> poem::Result<PostResponse> {
     let subject_id = edit_url_service
         .fetch_user_id_from_url_id(url_id)
-        .map_err(|_| Error::from_status(StatusCode::NOT_FOUND))?;
+        .map_err(Error::from_error_stack)?;
     if user_id_context.role < Role::Root && user_id_context.id != subject_id.created_by_user_id {
         return Err(Error::from_status(StatusCode::FORBIDDEN));
     }
@@ -167,7 +168,7 @@ async fn edit_url_post(
         Ok(validated) => {
             edit_url_service
                 .edit_url_submit(&validated, url_id)
-                .map_err(|_| Error::from_status(StatusCode::UNPROCESSABLE_ENTITY))?;
+                .map_err(Error::from_error_stack)?;
             session.flash(Flash::Success {
                 msg: "Successfully edited URL".to_string(),
             });
@@ -226,7 +227,7 @@ async fn add_url_post(
         Ok(validated) => {
             add_url_service
                 .add_url_submit(&validated, user_id_context.id)
-                .map_err(|_| Error::from_status(StatusCode::UNPROCESSABLE_ENTITY))?;
+                .map_err(Error::from_error_stack)?;
             session.flash(Flash::Success {
                 msg: "Successfully added URL".to_string(),
             });
@@ -259,13 +260,13 @@ async fn delete_url(
 ) -> poem::Result<Redirect> {
     let subject_id = delete_url_service
         .fetch_user_id_from_url_id(url_id)
-        .map_err(|_| Error::from_status(StatusCode::NOT_FOUND))?;
+        .map_err(Error::from_error_stack)?;
     if user_id_context.role < Role::Root && user_id_context.id != subject_id.created_by_user_id {
         return Err(Error::from_status(StatusCode::FORBIDDEN));
     }
     delete_url_service
         .delete_url(url_id)
-        .map_err(|_| Error::from_status(StatusCode::UNPROCESSABLE_ENTITY))?;
+        .map_err(Error::from_error_stack)?;
     session.flash(Flash::Success {
         msg: "Successfully deleted URL".to_string(),
     });

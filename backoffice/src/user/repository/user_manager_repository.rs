@@ -1,6 +1,7 @@
 use crate::user::model::user_manager_model::{FetchPassword, FetchUser, ListUser};
 use crate::user::role::Role;
 use error_stack::{Report, ResultExt};
+use poem::http::StatusCode;
 use rusqlite::{Connection, OptionalExtension, named_params};
 use shared::context::{Context, ContextError, FromContext};
 use shared::db::SqliteClient;
@@ -42,7 +43,8 @@ impl UserManagerRepository {
                 ":role": role.as_stringed(),
             },
         )
-        .change_context(UserManagerRepositoryError::QueryError)?;
+        .change_context(UserManagerRepositoryError::QueryError)
+        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
         Ok(())
     }
 
@@ -60,7 +62,8 @@ impl UserManagerRepository {
                 ":password": password,
             },
         )
-        .change_context(UserManagerRepositoryError::QueryError)?;
+        .change_context(UserManagerRepositoryError::QueryError)
+        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
         Ok(())
     }
 
@@ -79,7 +82,8 @@ impl UserManagerRepository {
                 ":role": role.as_stringed(),
             },
         )
-        .change_context(UserManagerRepositoryError::QueryError)?;
+        .change_context(UserManagerRepositoryError::QueryError)
+        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
         Ok(())
     }
 
@@ -90,7 +94,8 @@ impl UserManagerRepository {
         let conn = self.borrow_conn()?;
         let mut stmt = conn
             .prepare_cached(include_str!("_sql/user_manager_repository/fetch_user.sql"))
-            .change_context(UserManagerRepositoryError::QueryError)?;
+            .change_context(UserManagerRepositoryError::QueryError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
         let row: Option<FetchUser> = stmt
             .query_one(
                 named_params! {
@@ -105,7 +110,8 @@ impl UserManagerRepository {
                 },
             )
             .optional()
-            .change_context(UserManagerRepositoryError::RowValueError)?;
+            .change_context(UserManagerRepositoryError::RowValueError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
         Ok(row)
     }
 
@@ -113,7 +119,8 @@ impl UserManagerRepository {
         let conn = self.borrow_conn()?;
         let mut stmt = conn
             .prepare_cached(include_str!("_sql/user_manager_repository/list_users.sql"))
-            .change_context(UserManagerRepositoryError::QueryError)?;
+            .change_context(UserManagerRepositoryError::QueryError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
         let rows = stmt
             .query_map(named_params! {}, |row| {
                 Ok(ListUser {
@@ -144,7 +151,8 @@ impl UserManagerRepository {
                 ":user_id": user_id,
             },
         )
-        .change_context(UserManagerRepositoryError::QueryError)?;
+        .change_context(UserManagerRepositoryError::QueryError)
+        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
         Ok(())
     }
 
@@ -158,7 +166,8 @@ impl UserManagerRepository {
             .prepare_cached(include_str!(
                 "_sql/user_manager_repository/username_taken.sql"
             ))
-            .change_context(UserManagerRepositoryError::QueryError)?;
+            .change_context(UserManagerRepositoryError::QueryError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         let row: Option<bool> = stmt
             .query_one(
@@ -168,7 +177,8 @@ impl UserManagerRepository {
                 |row| Ok(row.get("taken")?),
             )
             .optional()
-            .change_context(UserManagerRepositoryError::RowValueError)?;
+            .change_context(UserManagerRepositoryError::RowValueError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         Ok(row.unwrap_or_default())
     }
@@ -184,7 +194,8 @@ impl UserManagerRepository {
             .prepare_cached(include_str!(
                 "_sql/user_manager_repository/fetch_password.sql"
             ))
-            .change_context(UserManagerRepositoryError::QueryError)?;
+            .change_context(UserManagerRepositoryError::QueryError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         let row = stmt
             .query_one(
@@ -197,7 +208,8 @@ impl UserManagerRepository {
                     })
                 },
             )
-            .change_context(UserManagerRepositoryError::RowValueError)?;
+            .change_context(UserManagerRepositoryError::RowValueError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         Ok(row)
     }
@@ -205,11 +217,10 @@ impl UserManagerRepository {
     fn borrow_conn(
         &'_ self,
     ) -> Result<MutexGuard<'_, Connection>, Report<UserManagerRepositoryError>> {
-        let guard = self
-            .sqlite_client
-            .get_conn()
-            .lock()
-            .map_err(|_| Report::new(UserManagerRepositoryError::LockError))?;
+        let guard = self.sqlite_client.get_conn().lock().map_err(|_| {
+            Report::new(UserManagerRepositoryError::LockError)
+                .attach(StatusCode::INTERNAL_SERVER_ERROR)
+        })?;
         Ok(guard)
     }
 }

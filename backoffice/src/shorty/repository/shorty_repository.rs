@@ -2,6 +2,7 @@ use crate::shorty::model::shorty_model::{
     GetUrlRedirectModel, GetUserIdByUrlIdModel, ListUrlRedirectModel,
 };
 use error_stack::{Report, ResultExt};
+use poem::http::StatusCode;
 use rusqlite::{Connection, OptionalExtension, named_params};
 use shared::context::{Context, ContextError, FromContext};
 use shared::db::SqliteClient;
@@ -43,7 +44,8 @@ impl ShortyRepository {
                 ":user_id": user_id,
             },
         )
-        .change_context(ShortyRepositoryError::QueryError)?;
+        .change_context(ShortyRepositoryError::QueryError)
+        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         Ok(())
     }
@@ -57,7 +59,8 @@ impl ShortyRepository {
                 ":id": id,
             },
         )
-        .change_context(ShortyRepositoryError::QueryError)?;
+        .change_context(ShortyRepositoryError::QueryError)
+        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         Ok(())
     }
@@ -78,7 +81,8 @@ impl ShortyRepository {
                 ":url_redirect": url_redirect,
             },
         )
-        .change_context(ShortyRepositoryError::QueryError)?;
+        .change_context(ShortyRepositoryError::QueryError)
+        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         Ok(())
     }
@@ -91,7 +95,8 @@ impl ShortyRepository {
 
         let mut stmt = conn
             .prepare_cached(include_str!("_sql/shorty_repository/get_url_redirect.sql"))
-            .map_err(|_| Report::new(ShortyRepositoryError::QueryError))?;
+            .map_err(|_| Report::new(ShortyRepositoryError::QueryError))
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         let item = stmt
             .query_one(
@@ -106,7 +111,8 @@ impl ShortyRepository {
                 },
             )
             .optional()
-            .change_context(ShortyRepositoryError::RowValueError)?;
+            .change_context(ShortyRepositoryError::RowValueError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         Ok(item)
     }
@@ -121,7 +127,8 @@ impl ShortyRepository {
             .prepare_cached(include_str!(
                 "_sql/shorty_repository/get_user_id_by_url_id.sql"
             ))
-            .map_err(|_| Report::new(ShortyRepositoryError::QueryError))?;
+            .change_context(ShortyRepositoryError::QueryError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         let item = stmt
             .query_one(
@@ -135,7 +142,8 @@ impl ShortyRepository {
                 },
             )
             .optional()
-            .change_context(ShortyRepositoryError::RowValueError)?;
+            .change_context(ShortyRepositoryError::RowValueError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         Ok(item)
     }
@@ -147,7 +155,8 @@ impl ShortyRepository {
 
         let mut stmt = conn
             .prepare_cached(include_str!("_sql/shorty_repository/list_url_redirect.sql"))
-            .map_err(|_| Report::new(ShortyRepositoryError::QueryError))?;
+            .map_err(|_| Report::new(ShortyRepositoryError::QueryError))
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         let items_iter = stmt
             .query_map(named_params! {}, |row| {
@@ -160,21 +169,21 @@ impl ShortyRepository {
                     username: row.get("username")?,
                 })
             })
-            .change_context(ShortyRepositoryError::QueryError)?;
+            .change_context(ShortyRepositoryError::QueryError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         let items = items_iter
             .collect::<Result<Vec<_>, _>>()
-            .change_context(ShortyRepositoryError::RowValueError)?;
+            .change_context(ShortyRepositoryError::RowValueError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         Ok(items.into())
     }
 
     fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<ShortyRepositoryError>> {
-        let guard = self
-            .sqlite_client
-            .get_conn()
-            .lock()
-            .map_err(|_| Report::new(ShortyRepositoryError::LockError))?;
+        let guard = self.sqlite_client.get_conn().lock().map_err(|_| {
+            Report::new(ShortyRepositoryError::LockError).attach(StatusCode::INTERNAL_SERVER_ERROR)
+        })?;
         Ok(guard)
     }
 }

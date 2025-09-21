@@ -2,6 +2,7 @@ use crate::shorty::form::add_edit_url_form::AddEditUrlValidated;
 use crate::shorty::model::shorty_model::{GetUrlRedirectModel, GetUserIdByUrlIdModel};
 use crate::shorty::repository::shorty_repository::ShortyRepository;
 use error_stack::{Report, ResultExt};
+use poem::http::StatusCode;
 use shared::context::{Context, ContextError, FromContext};
 
 #[derive(Debug, thiserror::Error)]
@@ -26,7 +27,7 @@ impl EditUrlService {
         self.shorty_repository
             .get_url_redirect(id)
             .change_context(EditUrlServiceError::DbError)?
-            .ok_or_else(|| Report::new(EditUrlServiceError::DbError))
+            .ok_or_else(|| Report::new(EditUrlServiceError::DbError).attach(StatusCode::NOT_FOUND))
     }
 
     pub fn edit_url_submit(
@@ -48,7 +49,7 @@ impl EditUrlService {
         self.shorty_repository
             .get_user_id_by_url_id(id)
             .change_context(EditUrlServiceError::DbError)?
-            .ok_or_else(|| Report::new(EditUrlServiceError::DbError))
+            .ok_or_else(|| Report::new(EditUrlServiceError::DbError).attach(StatusCode::NOT_FOUND))
     }
 }
 

@@ -2,6 +2,7 @@ use crate::user::form::edit_password_manager::EditPasswordManagerValidated;
 use crate::user::model::user_manager_model::FetchUser;
 use crate::user::repository::user_manager_repository::UserManagerRepository;
 use error_stack::{Report, ResultExt};
+use poem::http::StatusCode;
 use shared::context::{Context, ContextError, FromContext};
 use shared::password::Password;
 use thiserror::Error;
@@ -50,12 +51,15 @@ impl EditPasswordService {
         self.user_manager_repository
             .fetch_user(user_id)
             .change_context(EditPasswordServiceError::UserNotFound)?
-            .ok_or_else(|| Report::new(EditPasswordServiceError::UserNotFound))
+            .ok_or_else(|| {
+                Report::new(EditPasswordServiceError::UserNotFound).attach(StatusCode::NOT_FOUND)
+            })
     }
 
     fn hash_password(&self, password: &str) -> Result<Password, Report<EditPasswordServiceError>> {
         Password::hash_password(password.to_string())
             .change_context(EditPasswordServiceError::PasswordHashError)
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)
     }
 }
 

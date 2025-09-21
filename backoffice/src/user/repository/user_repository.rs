@@ -1,6 +1,7 @@
 use crate::user::model::user_model::{IdPassword, UserIdContext};
 use crate::user::role::Role;
 use error_stack::{Report, ResultExt};
+use poem::http::StatusCode;
 use rusqlite::{Connection, OptionalExtension, named_params};
 use shared::context::{Context, ContextError, FromContext};
 use shared::db::SqliteClient;
@@ -42,7 +43,8 @@ impl UserRepository {
                 ":user_id": user_id,
             },
         )
-        .change_context(UserRepositoryError::QueryError)?;
+        .change_context(UserRepositoryError::QueryError)
+        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         Ok(())
     }
@@ -56,7 +58,8 @@ impl UserRepository {
                 ":token": token,
             },
         )
-        .change_context(UserRepositoryError::QueryError)?;
+        .change_context(UserRepositoryError::QueryError)
+        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         Ok(())
     }
@@ -69,7 +72,8 @@ impl UserRepository {
 
         let mut stmt = conn
             .prepare_cached(include_str!("_sql/user_repository/find_by_token.sql"))
-            .change_context(UserRepositoryError::QueryError)?;
+            .change_context(UserRepositoryError::QueryError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         let row: Option<UserIdContext> = stmt
             .query_one(
@@ -86,11 +90,14 @@ impl UserRepository {
                 },
             )
             .optional()
-            .change_context(UserRepositoryError::RowValueError)?;
+            .change_context(UserRepositoryError::RowValueError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         match row {
             Some(row) => Ok(row),
-            None => Err(Report::new(UserRepositoryError::NotFoundError)),
+            None => {
+                Err(Report::new(UserRepositoryError::NotFoundError).attach(StatusCode::NOT_FOUND))
+            }
         }
     }
 
@@ -102,7 +109,8 @@ impl UserRepository {
 
         let mut stmt = conn
             .prepare_cached(include_str!("_sql/user_repository/get_user_password.sql"))
-            .change_context(UserRepositoryError::QueryError)?;
+            .change_context(UserRepositoryError::QueryError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         let row: Option<IdPassword> = stmt
             .query_one(
@@ -117,20 +125,21 @@ impl UserRepository {
                 },
             )
             .optional()
-            .change_context(UserRepositoryError::RowValueError)?;
+            .change_context(UserRepositoryError::RowValueError)
+            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         match row {
             Some(row) => Ok(row),
-            None => Err(Report::new(UserRepositoryError::NotFoundError)),
+            None => {
+                Err(Report::new(UserRepositoryError::NotFoundError).attach(StatusCode::NOT_FOUND))
+            }
         }
     }
 
     fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<UserRepositoryError>> {
-        let guard = self
-            .sqlite_client
-            .get_conn()
-            .lock()
-            .map_err(|_| Report::new(UserRepositoryError::LockError))?;
+        let guard = self.sqlite_client.get_conn().lock().map_err(|_| {
+            Report::new(UserRepositoryError::LockError).attach(StatusCode::INTERNAL_SERVER_ERROR)
+        })?;
         Ok(guard)
     }
 }

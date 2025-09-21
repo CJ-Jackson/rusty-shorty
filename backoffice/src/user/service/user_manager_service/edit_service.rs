@@ -3,6 +3,7 @@ use crate::user::model::user_manager_model::FetchUser;
 use crate::user::repository::user_manager_repository::UserManagerRepository;
 use cjtoolkit_structured_validator::types::username::IsUsernameTakenAsync;
 use error_stack::{Report, ResultExt};
+use poem::http::StatusCode;
 use shared::context::{Context, ContextError, FromContext};
 use thiserror::Error;
 
@@ -44,7 +45,9 @@ impl EditUserService {
         self.user_manager_repository
             .fetch_user(user_id)
             .change_context(EditUserServiceError::UserNotFound)?
-            .ok_or_else(|| Report::new(EditUserServiceError::UserNotFound))
+            .ok_or_else(|| {
+                Report::new(EditUserServiceError::UserNotFound).attach(StatusCode::NOT_FOUND)
+            })
     }
 }
 

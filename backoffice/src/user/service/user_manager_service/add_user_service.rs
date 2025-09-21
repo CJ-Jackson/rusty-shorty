@@ -2,6 +2,7 @@ use crate::user::form::add_user::AddUserValidated;
 use crate::user::repository::user_manager_repository::UserManagerRepository;
 use cjtoolkit_structured_validator::types::username::IsUsernameTakenAsync;
 use error_stack::{Report, ResultExt};
+use poem::http::StatusCode;
 use shared::context::{Context, ContextError, FromContext};
 use shared::password::Password;
 use thiserror::Error;
@@ -46,6 +47,7 @@ impl AddUserService {
     fn hash_password(&self, password: &str) -> Result<Password, Report<AddUserServiceError>> {
         Password::hash_password(password.to_string())
             .change_context(AddUserServiceError::PasswordHashError)
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)
     }
 }
 

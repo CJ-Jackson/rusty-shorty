@@ -22,6 +22,7 @@ use poem::{Error, IntoResponse, Route, get, handler};
 use shared::context::Dep;
 use shared::csrf::CsrfTokenHtml;
 use shared::embed::EmbedAsString;
+use shared::error::FromErrorStack;
 use shared::flash::{Flash, FlashMessage};
 use shared::locale::LocaleExt;
 use shared::query_string::form::FormQs;
@@ -125,7 +126,7 @@ async fn edit_user_get(
 ) -> poem::Result<Markup> {
     let subject_user = edit_user_service
         .fetch_user(user_id)
-        .map_err(|_| Error::from_status(StatusCode::NOT_FOUND))?;
+        .map_err(Error::from_error_stack)?;
 
     let mut edit_user = EditUserForm::default();
     edit_user.username = subject_user.username.to_string();
@@ -153,7 +154,7 @@ async fn edit_user_post(
 ) -> poem::Result<PostResponse> {
     let subject_user = edit_user_service
         .fetch_user(user_id)
-        .map_err(|_| Error::from_status(StatusCode::NOT_FOUND))?;
+        .map_err(Error::from_error_stack)?;
     csrf_verifier
         .validate(edit_user_form.csrf_token.as_str())
         .map_err(|_| Error::from_status(StatusCode::UNAUTHORIZED))?;
@@ -165,7 +166,7 @@ async fn edit_user_post(
         Ok(validated) => {
             edit_user_service
                 .edit_user_submit(user_id, &validated)
-                .map_err(|_| Error::from_status(StatusCode::UNPROCESSABLE_ENTITY))?;
+                .map_err(Error::from_error_stack)?;
             let l = &context_html_builder.locale;
             session.flash(Flash::Success {
                 msg: l.text_with_default_args(
@@ -203,7 +204,7 @@ async fn edit_user_password_get(
 ) -> poem::Result<Markup> {
     let subject_user = edit_password_service
         .fetch_user(user_id)
-        .map_err(|_| Error::from_status(StatusCode::NOT_FOUND))?;
+        .map_err(Error::from_error_stack)?;
 
     let edit_password_form = EditPasswordManagerForm::default();
 
@@ -229,7 +230,7 @@ async fn edit_user_password_post(
 ) -> poem::Result<PostResponse> {
     let subject_user = edit_password_service
         .fetch_user(user_id)
-        .map_err(|_| Error::from_status(StatusCode::NOT_FOUND))?;
+        .map_err(Error::from_error_stack)?;
     csrf_verifier
         .validate(edit_password_manager_form.csrf_token.as_str())
         .map_err(|_| Error::from_status(StatusCode::UNAUTHORIZED))?;
@@ -238,7 +239,7 @@ async fn edit_user_password_post(
         Ok(validated) => {
             edit_password_service
                 .edit_password_submit(user_id, &validated)
-                .map_err(|_| Error::from_status(StatusCode::UNPROCESSABLE_ENTITY))?;
+                .map_err(Error::from_error_stack)?;
             let l = &context_html_builder.locale;
             session.flash(Flash::Success {
                 msg: l.text_with_default_args(
@@ -296,7 +297,7 @@ async fn add_user_password_post(
         Ok(validated) => {
             add_user_service
                 .add_user_submit(&validated)
-                .map_err(|_| Error::from_status(StatusCode::UNPROCESSABLE_ENTITY))?;
+                .map_err(Error::from_error_stack)?;
             let l = &context_html_builder.locale;
             session.flash(Flash::Success {
                 msg: l.text_with_default_args(
