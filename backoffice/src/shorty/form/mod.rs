@@ -1,2 +1,2 @@
-mod add_edit_url_form;
-mod locale;
+pub mod add_edit_url_form;
+pub mod locale;

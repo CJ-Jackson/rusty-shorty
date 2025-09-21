@@ -29,6 +29,12 @@ impl NavigationItem {
                 locale: "top-navigation-home".to_string(),
             },
             Self {
+                name: "URL Redirect".to_string(),
+                url: "/shorty".to_string(),
+                tag: "shorty".to_string(),
+                locale: "top-navigation-url".to_string(),
+            },
+            Self {
                 name: "User".to_string(),
                 url: "/user/".to_string(),
                 tag: "user".to_string(),
