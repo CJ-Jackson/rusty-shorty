@@ -10,8 +10,7 @@
         font-size: var(--text-xl);
         font-weight: var(--font-weight-semibold);
     }
-
-
+    
     .ul-bullet {
         list-style: disc;
     }
