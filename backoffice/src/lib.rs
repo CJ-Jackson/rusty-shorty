@@ -1,5 +1,6 @@
 pub(crate) mod common;
 pub(crate) mod home;
+pub(crate) mod shorty;
 pub(crate) mod user;
 
 use crate::common::embed::{AssetFilesEndPoint, EMBED_PATH};
