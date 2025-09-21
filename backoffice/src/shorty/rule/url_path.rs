@@ -18,7 +18,7 @@ struct MustBeKebabCaseLocale;
 
 impl LocaleMessage for MustBeKebabCaseLocale {
     fn get_locale_data(&self) -> Arc<LocaleData> {
-        LocaleData::new("validate-must-be-kabab-case")
+        LocaleData::new("validate-must-be-kebab-case")
     }
 }
 
@@ -31,7 +31,7 @@ fn must_be_kebab_case(url_path: &str) -> Result<(), FieldError> {
         .get_or_init(|| Regex::new(r"^([a-z0-9]+(-[a-z0-9]+)*)+$").expect("Invalid regex"));
     if !regex.is_match(url_path) {
         messages.push((
-            "Must be kabab case".to_string(),
+            "Must be kebab case".to_string(),
             Box::new(MustBeKebabCaseLocale),
         ));
     }
