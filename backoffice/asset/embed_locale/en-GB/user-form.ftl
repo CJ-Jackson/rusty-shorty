@@ -12,3 +12,7 @@ user-form-password-confirm-placeholder = Password Confirm
 user-form-password-current = Current Password:
 user-form-password-current-placeholder = Current
 user-form-role = Role:
+
+user-route-submit-add = Add
+user-route-submit-edit = Edit
+user-route-submit-password = Submit

@@ -2,6 +2,7 @@ use crate::common::embed::Asset;
 use crate::common::html::context_html::ContextHtmlBuilder;
 use crate::common::icon::{pencil_square_icon, plus_icon, trash_icon};
 use crate::shorty::form::add_edit_url_form::AddEditUrlForm;
+use crate::shorty::route::locale::ShortyRouteLocale;
 use crate::shorty::service::add_url_service::AddUrlService;
 use crate::shorty::service::delete_url_service::DeleteUrlService;
 use crate::shorty::service::edit_url_service::EditUrlService;
@@ -34,20 +35,22 @@ async fn list_urls(
     let delete_icon = trash_icon();
     let add_icon = plus_icon();
 
+    let lc = ShortyRouteLocale::new(&context_html_builder.locale);
+
     context_html_builder
-        .attach_title("Shorty")
+        .attach_title(&lc.title)
         .set_current_tag("shorty")
         .attach_content(html! {
-            h1 { "Shorty" }
+            h1 { (lc.title) }
             table .table-full {
                 thead {
                     tr {
-                        th { "ID" }
-                        th { "Path" }
-                        th { "Redirect URL" }
-                        th { "Created At" }
-                        th { "Created By" }
-                        th .action { "Action" }
+                        th { (lc.head_id) }
+                        th { (lc.head_path) }
+                        th { (lc.head_redirect_url) }
+                        th { (lc.head_created_at) }
+                        th { (lc.head_created_by) }
+                        th .action { (lc.head_action) }
                     }
                 }
                 tbody {
@@ -60,10 +63,10 @@ async fn list_urls(
                             td { (url.username) }
                             td .action {
                                 @if user_id_context.role == Role::Root || user_id_context.id == url.created_by_user_id {
-                                    a .icon href=( format!("{}/edit/{}", SHORTY_ROUTE, url.id)) title="Edit" { (edit_icon) }
+                                    a .icon href=( format!("{}/edit/{}", SHORTY_ROUTE, url.id)) title=(lc.action_edit) { (edit_icon) }
                                     " "
                                     a .icon .js-delete-confirm data-delete=(url.id)
-                                    href=( format!("{}/delete/{}", SHORTY_ROUTE, url.id)) title="Delete" { (delete_icon) }
+                                    href=( format!("{}/delete/{}", SHORTY_ROUTE, url.id)) title=(lc.action_delete) { (delete_icon) }
                                 }
                             }
                         }
@@ -71,7 +74,7 @@ async fn list_urls(
                 }
             }
             div .text-right mt-3 {
-                a .inline-block href=( format!("{}/add", SHORTY_ROUTE)) title="Add" { (add_icon) }
+                a .inline-block href=( format!("{}/add", SHORTY_ROUTE)) title=(lc.action_add) { (add_icon) }
             }
         }).attach_footer(list_url_js_asset())
         .build()

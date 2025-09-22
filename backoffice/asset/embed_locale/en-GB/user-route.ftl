@@ -14,6 +14,3 @@ user-route-flash-add-success = Successfully created user: { $username }
 user-route-flash-sign-out-error = Failed to sign out user id: { $user_id }
 user-route-flash-sign-out-success = Successfully signed out user id: { $user_id }
 
-user-route-submit-add = Add
-user-route-submit-edit = Edit
-user-route-submit-password = Submit

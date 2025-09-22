@@ -175,7 +175,7 @@ impl<T> ResponseError for ErrorStack<T> {
         let body = if cfg!(debug_assertions) {
             format!("{:?}", self.0)
         } else {
-            format!("{:#}", self.0)
+            format!("{}", self.0)
         };
         match self.0.downcast_ref::<ErrorStackUseJson>() {
             Some(_) => {
