@@ -11,7 +11,7 @@ use crate::user::model::user_model::UserIdContext;
 use crate::user::role::visitor_only::visitor_redirect;
 use crate::user::route::login::login_route;
 use crate::user::route::user::{USER_ROUTE, user_route};
-use error_stack::fmt::Charset;
+use error_stack::fmt::{Charset, ColorMode};
 use error_stack::{Report, ResultExt};
 use poem::listener::TcpListener;
 use poem::middleware::{CatchPanic, CookieJarManager, Csrf};
@@ -30,6 +30,7 @@ pub mod error_export {
 
 pub async fn boot() -> Result<(), Report<MainError>> {
     init_log();
+    Report::set_color_mode(ColorMode::None);
 
     let config = Config::fetch()
         .await
