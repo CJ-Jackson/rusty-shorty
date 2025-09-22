@@ -17,7 +17,7 @@ use poem::session::Session;
 use poem::web::{CsrfToken, CsrfVerifier, Path, Redirect};
 use poem::{Error, IntoResponse, Route, get, handler};
 use shared::context::Dep;
-use shared::csrf::CsrfTokenHtml;
+use shared::csrf::{CsrfTokenHtml, CsrfVerifierError};
 use shared::embed::EmbedAsString;
 use shared::error::FromErrorStack;
 use shared::flash::{Flash, FlashMessage};
@@ -166,8 +166,8 @@ async fn edit_url_post(
         return Err(Error::from_status(StatusCode::FORBIDDEN));
     }
     csrf_verifier
-        .validate(edit_url_form.csrf_token.as_str())
-        .map_err(|_| Error::from_status(StatusCode::UNAUTHORIZED))?;
+        .verify(edit_url_form.csrf_token.as_str())
+        .map_err(Error::from_error_stack)?;
     let validated_result = edit_url_form.as_validated().await.0;
     match validated_result {
         Ok(validated) => {
@@ -229,8 +229,8 @@ async fn add_url_post(
     session: &Session,
 ) -> poem::Result<PostResponse> {
     csrf_verifier
-        .validate(add_url_form.csrf_token.as_str())
-        .map_err(|_| Error::from_status(StatusCode::UNAUTHORIZED))?;
+        .verify(add_url_form.csrf_token.as_str())
+        .map_err(Error::from_error_stack)?;
     let validated_result = add_url_form.as_validated().await.0;
     match validated_result {
         Ok(validated) => {

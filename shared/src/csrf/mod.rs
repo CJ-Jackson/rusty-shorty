@@ -28,7 +28,7 @@ pub struct CsrfError;
 
 impl ResponseError for CsrfError {
     fn status(&self) -> StatusCode {
-        StatusCode::FORBIDDEN
+        StatusCode::UNAUTHORIZED
     }
 
     fn as_response(&self) -> Response
@@ -45,7 +45,9 @@ pub trait CsrfVerifierError {
 
 impl CsrfVerifierError for CsrfVerifier {
     fn verify(&self, token: &str) -> Result<(), Report<CsrfError>> {
-        self.validate(token).change_context(CsrfError)
+        self.validate(token)
+            .change_context(CsrfError)
+            .attach(StatusCode::UNAUTHORIZED)
     }
 }
 

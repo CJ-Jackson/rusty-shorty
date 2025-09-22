@@ -20,7 +20,7 @@ use poem::session::Session;
 use poem::web::{CsrfToken, CsrfVerifier, Path, Redirect};
 use poem::{Error, IntoResponse, Route, get, handler};
 use shared::context::Dep;
-use shared::csrf::CsrfTokenHtml;
+use shared::csrf::{CsrfTokenHtml, CsrfVerifierError};
 use shared::embed::EmbedAsString;
 use shared::error::FromErrorStack;
 use shared::flash::{Flash, FlashMessage};
@@ -156,8 +156,8 @@ async fn edit_user_post(
         .fetch_user(user_id)
         .map_err(Error::from_error_stack)?;
     csrf_verifier
-        .validate(edit_user_form.csrf_token.as_str())
-        .map_err(|_| Error::from_status(StatusCode::UNAUTHORIZED))?;
+        .verify(edit_user_form.csrf_token.as_str())
+        .map_err(Error::from_error_stack)?;
     let validated_result = edit_user_form
         .as_validated(&edit_user_service, &subject_user.username)
         .await
@@ -232,8 +232,8 @@ async fn edit_user_password_post(
         .fetch_user(user_id)
         .map_err(Error::from_error_stack)?;
     csrf_verifier
-        .validate(edit_password_manager_form.csrf_token.as_str())
-        .map_err(|_| Error::from_status(StatusCode::UNAUTHORIZED))?;
+        .verify(edit_password_manager_form.csrf_token.as_str())
+        .map_err(Error::from_error_stack)?;
     let validated_result = edit_password_manager_form.as_validated().await.0;
     match validated_result {
         Ok(validated) => {
@@ -290,8 +290,8 @@ async fn add_user_password_post(
     session: &Session,
 ) -> poem::Result<PostResponse> {
     csrf_verifier
-        .validate(add_user_form.csrf_token.as_str())
-        .map_err(|_| Error::from_status(StatusCode::UNAUTHORIZED))?;
+        .verify(add_user_form.csrf_token.as_str())
+        .map_err(Error::from_error_stack)?;
     let validated_result = add_user_form.as_validated(&add_user_service).await.0;
     match validated_result {
         Ok(validated) => {
