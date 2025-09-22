@@ -54,8 +54,12 @@ pub fn setup_critical_error_debug_hook() {
     });
 }
 
+struct LogIt;
+
 pub trait ExtraResultExt: ResultExt {
     fn attach_critical(self, msg: String) -> Result<Self::Ok, Report<Self::Context>>;
+
+    fn log_it(self) -> Result<Self::Ok, Report<Self::Context>>;
 
     fn attach_critical_lazy<F>(self, msg: F) -> Result<Self::Ok, Report<Self::Context>>
     where
@@ -87,6 +91,13 @@ where
         match self {
             Ok(ok) => Ok(ok),
             Err(report) => Err(report.attach(CriticalError(msg))),
+        }
+    }
+
+    fn log_it(self) -> Self {
+        match self {
+            Ok(ok) => Ok(ok),
+            Err(report) => Err(report.attach_opaque(LogIt)),
         }
     }
 
@@ -142,7 +153,23 @@ where
     }
 }
 
+pub trait LogItExt {
+    fn log_it(self) -> Self;
+}
+
+impl<T> LogItExt for Report<T> {
+    fn log_it(self) -> Self {
+        self.attach_opaque(LogIt)
+    }
+}
+
 pub struct ErrorStackUseJson;
+
+#[derive(Clone)]
+pub struct LogData {
+    pub summary: String,
+    pub details: String,
+}
 
 struct ErrorStack<T>(Report<T>);
 
@@ -204,6 +231,17 @@ impl FromErrorStack for poem::Error {
     where
         T: Send + Sync + 'static,
     {
-        Self::from(ErrorStack(err))
+        match err.downcast_ref::<LogIt>() {
+            None => Self::from(ErrorStack(err)),
+            Some(_) => {
+                let data = LogData {
+                    summary: format!("{:#}", err),
+                    details: format!("{:?}", err),
+                };
+                let mut error = Self::from(ErrorStack(err));
+                error.set_data(data);
+                error
+            }
+        }
     }
 }

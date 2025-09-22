@@ -6,6 +6,7 @@ use poem::http::StatusCode;
 use rusqlite::{Connection, OptionalExtension, named_params};
 use shared::context::{Context, ContextError, FromContext};
 use shared::db::SqliteClient;
+use shared::error::LogItExt;
 use std::sync::{Arc, MutexGuard};
 use thiserror::Error;
 
@@ -185,6 +186,7 @@ impl ShortyRepository {
             Report::new(ShortyRepositoryError::LockError)
                 .attach(StatusCode::INTERNAL_SERVER_ERROR)
                 .attach(err.to_string())
+                .log_it()
         })?;
         Ok(guard)
     }

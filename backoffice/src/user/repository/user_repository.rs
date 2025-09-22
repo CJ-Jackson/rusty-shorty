@@ -5,6 +5,7 @@ use poem::http::StatusCode;
 use rusqlite::{Connection, OptionalExtension, named_params};
 use shared::context::{Context, ContextError, FromContext};
 use shared::db::SqliteClient;
+use shared::error::LogItExt;
 use std::sync::MutexGuard;
 use thiserror::Error;
 
@@ -141,6 +142,7 @@ impl UserRepository {
             Report::new(UserRepositoryError::LockError)
                 .attach(StatusCode::INTERNAL_SERVER_ERROR)
                 .attach(err.to_string())
+                .log_it()
         })?;
         Ok(guard)
     }

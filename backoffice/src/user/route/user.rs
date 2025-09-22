@@ -22,7 +22,7 @@ use poem::{Error, IntoResponse, Route, get, handler};
 use shared::context::Dep;
 use shared::csrf::{CsrfTokenHtml, CsrfVerifierError};
 use shared::embed::EmbedAsString;
-use shared::error::FromErrorStack;
+use shared::error::{ExtraResultExt, FromErrorStack};
 use shared::flash::{Flash, FlashMessage};
 use shared::locale::LocaleExt;
 use shared::query_string::form::FormQs;
@@ -166,6 +166,7 @@ async fn edit_user_post(
         Ok(validated) => {
             edit_user_service
                 .edit_user_submit(user_id, &validated)
+                .log_it()
                 .map_err(Error::from_error_stack)?;
             let l = &context_html_builder.locale;
             session.flash(Flash::Success {
@@ -239,6 +240,7 @@ async fn edit_user_password_post(
         Ok(validated) => {
             edit_password_service
                 .edit_password_submit(user_id, &validated)
+                .log_it()
                 .map_err(Error::from_error_stack)?;
             let l = &context_html_builder.locale;
             session.flash(Flash::Success {
@@ -297,6 +299,7 @@ async fn add_user_password_post(
         Ok(validated) => {
             add_user_service
                 .add_user_submit(&validated)
+                .log_it()
                 .map_err(Error::from_error_stack)?;
             let l = &context_html_builder.locale;
             session.flash(Flash::Success {

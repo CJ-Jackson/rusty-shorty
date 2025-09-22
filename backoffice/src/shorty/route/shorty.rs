@@ -19,7 +19,7 @@ use poem::{Error, IntoResponse, Route, get, handler};
 use shared::context::Dep;
 use shared::csrf::{CsrfTokenHtml, CsrfVerifierError};
 use shared::embed::EmbedAsString;
-use shared::error::FromErrorStack;
+use shared::error::{ExtraResultExt, FromErrorStack};
 use shared::flash::{Flash, FlashMessage};
 use shared::locale::LocaleExt;
 use shared::query_string::form::FormQs;
@@ -173,6 +173,7 @@ async fn edit_url_post(
         Ok(validated) => {
             edit_url_service
                 .edit_url_submit(&validated, url_id)
+                .log_it()
                 .map_err(Error::from_error_stack)?;
             let l = &context_html_builder.locale;
             session.flash(Flash::Success {
@@ -236,6 +237,7 @@ async fn add_url_post(
         Ok(validated) => {
             add_url_service
                 .add_url_submit(&validated, user_id_context.id)
+                .log_it()
                 .map_err(Error::from_error_stack)?;
             let l = &context_html_builder.locale;
             session.flash(Flash::Success {
@@ -280,6 +282,7 @@ async fn delete_url(
     }
     delete_url_service
         .delete_url(url_id)
+        .log_it()
         .map_err(Error::from_error_stack)?;
     session.flash(Flash::Success {
         msg: l.text_with_default(
