@@ -75,7 +75,7 @@ impl EditPasswordManagerForm {
                         (errors.password_confirm.into_error_html())
                     }
                     div .form-group {
-                        input .btn .btn-sky-blue type="submit" value="Submit" {}
+                        input .btn .btn-sky-blue type="submit" value=(user_form_locale.submit_password) {}
                     }
                 }
             })

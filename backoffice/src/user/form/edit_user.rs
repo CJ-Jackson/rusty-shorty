@@ -84,7 +84,7 @@ impl EditUserForm {
                     }
                 }
                 div .form-group {
-                    input .btn .btn-sky-blue type="submit" value="Edit" {}
+                    input .btn .btn-sky-blue type="submit" value=(user_form_locale.submit_edit) {}
                 }
             }
         }).build()

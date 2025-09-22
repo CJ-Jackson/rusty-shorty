@@ -12,6 +12,9 @@ pub struct UserFormLocale {
     pub password_confirm: String,
     pub password_confirm_placeholder: String,
     pub role: String,
+    pub submit_add: String,
+    pub submit_edit: String,
+    pub submit_password: String,
 }
 
 impl UserFormLocale {
@@ -32,6 +35,9 @@ impl UserFormLocale {
             password_confirm_placeholder: locale
                 .text_with_default("user-form-password-confirm-placeholder", "Password Confirm"),
             role: locale.text_with_default("user-form-role", "Role:"),
+            submit_add: locale.text_with_default("user-form-submit-add", "Add"),
+            submit_edit: locale.text_with_default("user-form-submit-edit", "Edit"),
+            submit_password: locale.text_with_default("user-form-submit-password", "Submit"),
         }
     }
 }

@@ -96,7 +96,7 @@ impl AddUserForm {
                         }
                     }
                     div .form-group {
-                        input .btn .btn-sky-blue type="submit" value="Add" {}
+                        input .btn .btn-sky-blue type="submit" value=(user_form_locale.submit_add) {}
                     }
                 }
             })
