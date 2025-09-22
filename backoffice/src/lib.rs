@@ -13,7 +13,7 @@ use crate::user::route::login::login_route;
 use crate::user::route::user::{USER_ROUTE, user_route};
 use error_stack::{Report, ResultExt};
 use poem::listener::TcpListener;
-use poem::middleware::{CookieJarManager, Csrf};
+use poem::middleware::{CatchPanic, CookieJarManager, Csrf};
 use poem::session::{CookieConfig, CookieSession};
 use poem::{EndpointExt, Server};
 use shared::cache_local::init_cache_local;
@@ -42,10 +42,11 @@ pub async fn boot() -> Result<(), Report<MainError>> {
 
     let route = route
         .around(init_cache_local::<UserIdContext, _>)
+        .data(build_locale_resources().change_context(MainError::LocaleError)?)
         .with(CookieJarManager::new())
         .with(CookieSession::new(CookieConfig::new()))
         .with(Csrf::new())
-        .data(build_locale_resources().change_context(MainError::LocaleError)?);
+        .with(CatchPanic::new());
 
     match config.upgrade() {
         Some(config) => {
