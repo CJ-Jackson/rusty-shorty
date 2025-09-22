@@ -73,7 +73,7 @@ impl UserRepository {
         let mut stmt = conn
             .prepare_cached(include_str!("_sql/user_repository/find_by_token.sql"))
             .change_context(UserRepositoryError::QueryError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         let row: Option<UserIdContext> = stmt
             .query_one(
@@ -110,7 +110,7 @@ impl UserRepository {
         let mut stmt = conn
             .prepare_cached(include_str!("_sql/user_repository/get_user_password.sql"))
             .change_context(UserRepositoryError::QueryError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         let row: Option<IdPassword> = stmt
             .query_one(
@@ -137,8 +137,10 @@ impl UserRepository {
     }
 
     fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<UserRepositoryError>> {
-        let guard = self.sqlite_client.get_conn().lock().map_err(|_| {
-            Report::new(UserRepositoryError::LockError).attach(StatusCode::INTERNAL_SERVER_ERROR)
+        let guard = self.sqlite_client.get_conn().lock().map_err(|err| {
+            Report::new(UserRepositoryError::LockError)
+                .attach(StatusCode::INTERNAL_SERVER_ERROR)
+                .attach(err.to_string())
         })?;
         Ok(guard)
     }

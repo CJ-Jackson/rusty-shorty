@@ -95,7 +95,7 @@ impl UserManagerRepository {
         let mut stmt = conn
             .prepare_cached(include_str!("_sql/user_manager_repository/fetch_user.sql"))
             .change_context(UserManagerRepositoryError::QueryError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
         let row: Option<FetchUser> = stmt
             .query_one(
                 named_params! {
@@ -120,7 +120,7 @@ impl UserManagerRepository {
         let mut stmt = conn
             .prepare_cached(include_str!("_sql/user_manager_repository/list_users.sql"))
             .change_context(UserManagerRepositoryError::QueryError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
         let rows = stmt
             .query_map(named_params! {}, |row| {
                 Ok(ListUser {
@@ -167,7 +167,7 @@ impl UserManagerRepository {
                 "_sql/user_manager_repository/username_taken.sql"
             ))
             .change_context(UserManagerRepositoryError::QueryError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         let row: Option<bool> = stmt
             .query_one(
@@ -195,7 +195,7 @@ impl UserManagerRepository {
                 "_sql/user_manager_repository/fetch_password.sql"
             ))
             .change_context(UserManagerRepositoryError::QueryError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         let row = stmt
             .query_one(
@@ -217,9 +217,10 @@ impl UserManagerRepository {
     fn borrow_conn(
         &'_ self,
     ) -> Result<MutexGuard<'_, Connection>, Report<UserManagerRepositoryError>> {
-        let guard = self.sqlite_client.get_conn().lock().map_err(|_| {
+        let guard = self.sqlite_client.get_conn().lock().map_err(|err| {
             Report::new(UserManagerRepositoryError::LockError)
                 .attach(StatusCode::INTERNAL_SERVER_ERROR)
+                .attach(err.to_string())
         })?;
         Ok(guard)
     }

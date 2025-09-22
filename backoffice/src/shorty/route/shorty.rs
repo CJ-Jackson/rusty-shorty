@@ -12,6 +12,7 @@ use crate::user::role::Role;
 use crate::user::role::user_role_check::must_be_user;
 use maud::{Markup, PreEscaped, html};
 use poem::http::StatusCode;
+use poem::i18n::Locale;
 use poem::session::Session;
 use poem::web::{CsrfToken, CsrfVerifier, Path, Redirect};
 use poem::{Error, IntoResponse, Route, get, handler};
@@ -20,6 +21,7 @@ use shared::csrf::CsrfTokenHtml;
 use shared::embed::EmbedAsString;
 use shared::error::FromErrorStack;
 use shared::flash::{Flash, FlashMessage};
+use shared::locale::LocaleExt;
 use shared::query_string::form::FormQs;
 
 pub const SHORTY_ROUTE: &str = "/shorty";
@@ -172,8 +174,12 @@ async fn edit_url_post(
             edit_url_service
                 .edit_url_submit(&validated, url_id)
                 .map_err(Error::from_error_stack)?;
+            let l = &context_html_builder.locale;
             session.flash(Flash::Success {
-                msg: "Successfully edited URL".to_string(),
+                msg: l.text_with_default(
+                    "shorty-route-flash-success-edit-url",
+                    "Successfully edited URL",
+                ),
             });
             Ok(PostResponse::RedirectSuccess(Redirect::see_other(
                 SHORTY_ROUTE.to_owned() + "/",
@@ -231,8 +237,12 @@ async fn add_url_post(
             add_url_service
                 .add_url_submit(&validated, user_id_context.id)
                 .map_err(Error::from_error_stack)?;
+            let l = &context_html_builder.locale;
             session.flash(Flash::Success {
-                msg: "Successfully added URL".to_string(),
+                msg: l.text_with_default(
+                    "shorty-route-flash-success-add-url",
+                    "Successfully added URL",
+                ),
             });
             Ok(PostResponse::RedirectSuccess(Redirect::see_other(
                 SHORTY_ROUTE.to_owned() + "/",
@@ -260,6 +270,7 @@ async fn delete_url(
     Dep(user_id_context): Dep<UserIdContext>,
     Path(url_id): Path<i64>,
     session: &Session,
+    l: Locale,
 ) -> poem::Result<Redirect> {
     let subject_id = delete_url_service
         .fetch_user_id_from_url_id(url_id)
@@ -271,7 +282,10 @@ async fn delete_url(
         .delete_url(url_id)
         .map_err(Error::from_error_stack)?;
     session.flash(Flash::Success {
-        msg: "Successfully deleted URL".to_string(),
+        msg: l.text_with_default(
+            "shorty-route-flash-success-deleted-url",
+            "Successfully deleted URL",
+        ),
     });
     Ok(Redirect::see_other(SHORTY_ROUTE.to_owned() + "/"))
 }

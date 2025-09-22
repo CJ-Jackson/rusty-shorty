@@ -10,3 +10,7 @@ shorty-route-head-action = Action
 shorty-route-action-edit = Edit Url
 shorty-route-action-delete = Delete Url
 shorty-route-action-add = Add Url
+
+shorty-route-flash-success-edit-url = Successfully edited URL
+shorty-route-flash-success-add-url = Successfully added URL
+shorty-route-flash-success-deleted-url = Successfully deleted URL
