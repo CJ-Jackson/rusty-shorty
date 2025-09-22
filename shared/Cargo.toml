@@ -22,4 +22,5 @@ chrono = { workspace = true }
 serde_qs = { workspace = true }
 
 mime = "0.3.17"
-
+colog = "1.4.0"
+log = "0.4.28"

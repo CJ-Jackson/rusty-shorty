@@ -15,11 +15,12 @@ use error_stack::{Report, ResultExt};
 use poem::listener::TcpListener;
 use poem::middleware::{CatchPanic, CookieJarManager, Csrf};
 use poem::session::{CookieConfig, CookieSession};
-use poem::{EndpointExt, Server};
+use poem::{EndpointExt, IntoResponse, Server};
 use shared::cache_local::init_cache_local;
 use shared::config::Config;
 use shared::csrf::{CSRF_PATH, route_csrf};
 use shared::error::boot_error::MainError;
+use shared::log::{init_log, log_poem_error};
 use user::route::login::LOGIN_ROUTE;
 
 pub mod error_export {
@@ -27,6 +28,8 @@ pub mod error_export {
 }
 
 pub async fn boot() -> Result<(), Report<MainError>> {
+    init_log();
+
     let config = Config::fetch()
         .await
         .change_context(MainError::ConfigError)?;
@@ -46,7 +49,8 @@ pub async fn boot() -> Result<(), Report<MainError>> {
         .with(CookieJarManager::new())
         .with(CookieSession::new(CookieConfig::new()))
         .with(Csrf::new())
-        .with(CatchPanic::new());
+        .with(CatchPanic::new())
+        .catch_all_error(catch_all_error);
 
     match config.upgrade() {
         Some(config) => {
@@ -61,4 +65,9 @@ pub async fn boot() -> Result<(), Report<MainError>> {
         }
         None => Err(Report::new(MainError::ConfigError)),
     }
+}
+
+async fn catch_all_error(err: poem::Error) -> impl IntoResponse {
+    log_poem_error(&err);
+    err.into_response()
 }
