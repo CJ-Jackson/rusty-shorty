@@ -12,11 +12,8 @@ async fn fetch_url(
     Dep(fetch_url_service): Dep<FetchUrlService>,
     Path(path): Path<String>,
 ) -> poem::Result<Redirect> {
-    let path = Field::parse_shorty_path(Some(&path)).map_err(|err| {
-        let mut poem_err = Error::from_status(StatusCode::NOT_FOUND);
-        poem_err.set_error_message(err.to_string());
-        poem_err
-    })?;
+    let path = Field::parse_shorty_path(Some(&path))
+        .map_err(|err| Error::from_string(err.to_string(), StatusCode::NOT_FOUND))?;
     let url = fetch_url_service
         .fetch_url(path.as_str())
         .map_err(Error::from_error_stack)?;
