@@ -22,12 +22,12 @@ impl LocaleMessage for MustBeKebabCaseLocale {
     }
 }
 
-static KABAB_CASE_REGEX_CACHE: OnceLock<Regex> = OnceLock::new();
+static KEBAB_CASE_REGEX_CACHE: OnceLock<Regex> = OnceLock::new();
 
 fn must_be_kebab_case(url_path: &str) -> Result<(), FieldError> {
     let mut messages = ValidateErrorCollector::new();
     // check kebab case
-    let regex = KABAB_CASE_REGEX_CACHE
+    let regex = KEBAB_CASE_REGEX_CACHE
         .get_or_init(|| Regex::new(r"^([a-z0-9]+(-[a-z0-9]+)*)+$").expect("Invalid regex"));
     if !regex.is_match(url_path) {
         messages.push((
