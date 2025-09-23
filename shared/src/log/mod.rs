@@ -7,6 +7,6 @@ pub fn init_log() {
 
 pub fn log_poem_error(err: &poem::Error) {
     if let Some(log_data) = err.data::<LogData>() {
-        error!("{}", &log_data.summary);
+        error!("{} - {}", err.status(), &log_data.summary);
     }
 }
