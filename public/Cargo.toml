@@ -7,3 +7,6 @@ edition = "2024"
 thiserror = { workspace = true }
 error-stack = { workspace = true }
 shared = { workspace = true }
+poem = { workspace = true }
+rusqlite = { workspace = true }
+cjtoolkit-structured-validator = { workspace = true }

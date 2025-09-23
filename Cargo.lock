@@ -1601,7 +1601,10 @@ dependencies = [
 name = "public"
 version = "0.1.0"
 dependencies = [
+ "cjtoolkit-structured-validator",
  "error-stack",
+ "poem",
+ "rusqlite",
  "shared",
  "thiserror 2.0.16",
 ]
