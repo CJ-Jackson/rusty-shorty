@@ -1,0 +1,37 @@
+use crate::user::model::user_model::UserIdContext;
+use poem::Endpoint;
+use shared::context::Context;
+use std::sync::Arc;
+use tokio::sync::Mutex;
+
+#[derive(Default)]
+pub struct BackofficeRequestCache {
+    pub user_id_context: Option<UserIdContext>,
+}
+
+pub async fn init_request_cache<EP: Endpoint>(
+    next: EP,
+    mut req: poem::Request,
+) -> poem::Result<EP::Output> {
+    req.set_data(Arc::new(Mutex::new(BackofficeRequestCache::default())));
+    next.call(req).await
+}
+
+pub trait RequestCacheExt {
+    fn request_cache(&self) -> Arc<Mutex<BackofficeRequestCache>>;
+}
+
+impl RequestCacheExt for poem::Request {
+    fn request_cache(&self) -> Arc<Mutex<BackofficeRequestCache>> {
+        Arc::clone(
+            self.data::<Arc<Mutex<BackofficeRequestCache>>>()
+                .expect("Request Cache"),
+        )
+    }
+}
+
+impl RequestCacheExt for Context<'_> {
+    fn request_cache(&self) -> Arc<Mutex<BackofficeRequestCache>> {
+        self.req.request_cache()
+    }
+}

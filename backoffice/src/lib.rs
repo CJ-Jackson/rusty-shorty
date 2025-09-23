@@ -3,11 +3,11 @@ pub(crate) mod home;
 pub(crate) mod shorty;
 pub(crate) mod user;
 
+use crate::common::cache::init_request_cache;
 use crate::common::embed::{AssetFilesEndPoint, EMBED_PATH};
 use crate::common::locale::build_locale_resources;
 use crate::home::home_route;
 use crate::shorty::route::shorty::{SHORTY_ROUTE, shorty_route};
-use crate::user::model::user_model::UserIdContext;
 use crate::user::role::visitor_only::visitor_redirect;
 use crate::user::route::login::login_route;
 use crate::user::route::user::{USER_ROUTE, user_route};
@@ -16,11 +16,10 @@ use poem::listener::TcpListener;
 use poem::middleware::{CatchPanic, CookieJarManager, Csrf};
 use poem::session::{CookieConfig, CookieSession};
 use poem::{EndpointExt, IntoResponse, Server};
-use shared::cache_local::init_cache_local;
 use shared::config::Config;
 use shared::csrf::{CSRF_PATH, route_csrf};
 use shared::error::boot_error::MainError;
-use shared::log::{init_log, log_poem_error};
+use shared::log::log_poem_error;
 use user::route::login::LOGIN_ROUTE;
 
 pub mod error_export {
@@ -43,7 +42,7 @@ pub async fn boot() -> Result<(), Report<MainError>> {
         .nest(EMBED_PATH, AssetFilesEndPoint::new());
 
     let route = route
-        .around(init_cache_local::<UserIdContext, _>)
+        .around(init_request_cache)
         .data(build_locale_resources().change_context(MainError::LocaleError)?)
         .with(CookieJarManager::new())
         .with(CookieSession::new(CookieConfig::new()))

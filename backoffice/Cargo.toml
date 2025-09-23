@@ -16,5 +16,6 @@ serde = { workspace = true }
 cjtoolkit-structured-validator = { workspace = true }
 chrono = { workspace = true }
 paspio = { workspace = true }
+tokio = { workspace = true }
 
 regex = "1.11.2"

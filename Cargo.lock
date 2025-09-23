@@ -187,6 +187,7 @@ dependencies = [
  "serde",
  "shared",
  "thiserror 2.0.16",
+ "tokio",
  "uuid",
 ]
 

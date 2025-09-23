@@ -1,7 +1,7 @@
+use crate::common::cache::RequestCacheExt;
 use crate::user::role::Role;
 use crate::user::service::user_check_service::UserCheckService;
 use error_stack::Report;
-use shared::cache_local::CacheLocalRequestExt;
 use shared::context::{Context, ContextError, FromContext};
 
 #[derive(Debug, Clone)]
@@ -14,20 +14,19 @@ pub struct UserIdContext {
 
 impl FromContext for UserIdContext {
     async fn from_context(ctx: &'_ Context<'_>) -> Result<Self, Report<ContextError>> {
-        let user_id_context = match ctx.req.cache_local::<UserIdContext>() {
-            Some(once_user_id_context) => {
-                let v: Result<&UserIdContext, Report<ContextError>> = once_user_id_context
-                    .0
-                    .get_or_try_init(|| async {
-                        let user_service: UserCheckService = ctx.inject().await?;
-                        Ok(user_service.get_user_context())
-                    })
-                    .await;
-                v
+        let request_cache = ctx.request_cache();
+        let mut request_cache = request_cache.lock().await;
+        let user_id_context = match request_cache.user_id_context.as_ref() {
+            None => {
+                let user_service: UserCheckService = ctx.inject().await?;
+                let user_id_context = user_service.get_user_context();
+                request_cache.user_id_context = Some(user_id_context.clone());
+                user_id_context
             }
-            None => return Err(Report::new(ContextError::Other)),
+            Some(user_id_context) => user_id_context.clone(),
         };
-        Ok(user_id_context?.clone())
+        drop(request_cache);
+        Ok(user_id_context)
     }
 }
 
