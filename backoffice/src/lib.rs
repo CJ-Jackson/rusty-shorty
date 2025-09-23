@@ -22,7 +22,7 @@ use shared::error::boot_error::MainError;
 use shared::log::log_poem_error;
 use user::route::login::LOGIN_ROUTE;
 
-pub mod error_export {
+pub mod export {
     pub use shared::error::boot_error::MainError;
     pub use shared::log::init_log;
 }

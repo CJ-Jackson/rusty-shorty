@@ -1,4 +1,4 @@
-use backoffice::error_export::{MainError, init_log};
+use backoffice::export::{MainError, init_log};
 use error_stack::fmt::ColorMode;
 use error_stack::{Report, ResultExt};
 
