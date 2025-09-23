@@ -5,7 +5,7 @@ use crate::user::form::add_user::AddUserForm;
 use crate::user::form::edit_password_manager::EditPasswordManagerForm;
 use crate::user::form::edit_user::EditUserForm;
 use crate::user::locale::user::UserLocale;
-use crate::user::model::user_model::UserIdContext;
+use crate::user::pointer::user_pointer::UserPointer;
 use crate::user::repository::user_manager_repository::UserManagerRepository;
 use crate::user::role::Role;
 use crate::user::role::user_role_check::{must_be_root, must_be_user};
@@ -33,7 +33,7 @@ pub const USER_ROUTE: &str = "/user";
 async fn list_users(
     Dep(list_user_service): Dep<ListUserService>,
     Dep(context_html_builder): Dep<ContextHtmlBuilder>,
-    Dep(user_id_context): Dep<UserIdContext>,
+    Dep(user_id_context): Dep<UserPointer>,
 ) -> Markup {
     let list_user = list_user_service.list_users();
     let edit_icon = pencil_square_icon();

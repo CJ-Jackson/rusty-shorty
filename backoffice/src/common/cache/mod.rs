@@ -1,4 +1,4 @@
-use crate::user::model::user_model::UserIdContext;
+use crate::user::pointer::user_pointer::UserPointer;
 use poem::Endpoint;
 use shared::context::Context;
 use std::sync::Arc;
@@ -6,7 +6,7 @@ use tokio::sync::Mutex;
 
 #[derive(Default)]
 pub struct BackofficeRequestCache {
-    pub user_id_context: Option<UserIdContext>,
+    pub user_pointer: Option<UserPointer>,
 }
 
 pub async fn init_request_cache<EP: Endpoint>(

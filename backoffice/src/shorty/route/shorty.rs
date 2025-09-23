@@ -7,7 +7,7 @@ use crate::shorty::service::add_url_service::AddUrlService;
 use crate::shorty::service::delete_url_service::DeleteUrlService;
 use crate::shorty::service::edit_url_service::EditUrlService;
 use crate::shorty::service::list_url_service::ListUrlService;
-use crate::user::model::user_model::UserIdContext;
+use crate::user::pointer::user_pointer::UserPointer;
 use crate::user::role::Role;
 use crate::user::role::user_role_check::must_be_user;
 use maud::{Markup, PreEscaped, html};
@@ -30,7 +30,7 @@ pub const SHORTY_ROUTE: &str = "/shorty";
 async fn list_urls(
     Dep(list_url_service): Dep<ListUrlService>,
     Dep(context_html_builder): Dep<ContextHtmlBuilder>,
-    Dep(user_id_context): Dep<UserIdContext>,
+    Dep(user_id_context): Dep<UserPointer>,
 ) -> Markup {
     let list_urls = list_url_service.list_urls();
     let edit_icon = pencil_square_icon();
@@ -120,7 +120,7 @@ impl IntoResponse for PostResponse {
 async fn edit_url_get(
     Dep(context_html_builder): Dep<ContextHtmlBuilder>,
     Dep(edit_url_service): Dep<EditUrlService>,
-    Dep(user_id_context): Dep<UserIdContext>,
+    Dep(user_id_context): Dep<UserPointer>,
     Path(url_id): Path<i64>,
     csrf_token: &CsrfToken,
 ) -> poem::Result<Markup> {
@@ -152,7 +152,7 @@ async fn edit_url_get(
 async fn edit_url_post(
     Dep(context_html_builder): Dep<ContextHtmlBuilder>,
     Dep(edit_url_service): Dep<EditUrlService>,
-    Dep(user_id_context): Dep<UserIdContext>,
+    Dep(user_id_context): Dep<UserPointer>,
     Path(url_id): Path<i64>,
     FormQs(edit_url_form): FormQs<AddEditUrlForm>,
     csrf_token: &CsrfToken,
@@ -223,7 +223,7 @@ async fn add_url_get(
 async fn add_url_post(
     Dep(context_html_builder): Dep<ContextHtmlBuilder>,
     Dep(add_url_service): Dep<AddUrlService>,
-    Dep(user_id_context): Dep<UserIdContext>,
+    Dep(user_id_context): Dep<UserPointer>,
     FormQs(add_url_form): FormQs<AddEditUrlForm>,
     csrf_token: &CsrfToken,
     csrf_verifier: &CsrfVerifier,
@@ -269,7 +269,7 @@ async fn add_url_post(
 #[handler]
 async fn delete_url(
     Dep(delete_url_service): Dep<DeleteUrlService>,
-    Dep(user_id_context): Dep<UserIdContext>,
+    Dep(user_id_context): Dep<UserPointer>,
     Path(url_id): Path<i64>,
     session: &Session,
     l: Locale,

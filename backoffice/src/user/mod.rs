@@ -1,6 +1,7 @@
 pub mod form;
 pub mod locale;
 pub mod model;
+pub mod pointer;
 pub mod repository;
 pub mod role;
 pub mod route;

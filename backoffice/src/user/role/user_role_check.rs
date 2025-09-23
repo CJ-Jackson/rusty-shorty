@@ -1,4 +1,4 @@
-use crate::user::model::user_model::UserIdContext;
+use crate::user::pointer::user_pointer::UserPointer;
 use crate::user::role::Role;
 use poem::http::StatusCode;
 use poem::{Endpoint, Error, FromRequest, IntoEndpoint, Request};
@@ -10,7 +10,7 @@ impl<E: Endpoint> Endpoint for UserRoleCheck<E> {
     type Output = E::Output;
 
     async fn call(&self, req: Request) -> poem::Result<Self::Output> {
-        let Dep(user_context) = Dep::<UserIdContext>::from_request_without_body(&req).await?;
+        let Dep(user_context) = Dep::<UserPointer>::from_request_without_body(&req).await?;
 
         if user_context.role < self.0 {
             return Err(Error::from_status(StatusCode::UNAUTHORIZED));

@@ -1,4 +1,4 @@
-use crate::user::model::user_model::UserIdContext;
+use crate::user::pointer::user_pointer::UserPointer;
 use crate::user::role::Role;
 use crate::user::route::login::LOGIN_ROUTE;
 use poem::http::StatusCode;
@@ -12,7 +12,7 @@ impl<E: Endpoint> Endpoint for VisitorOnly<E> {
     type Output = E::Output;
 
     async fn call(&self, req: Request) -> poem::Result<Self::Output> {
-        let Dep(user_context) = Dep::<UserIdContext>::from_request_without_body(&req).await?;
+        let Dep(user_context) = Dep::<UserPointer>::from_request_without_body(&req).await?;
 
         if user_context.role != Role::Visitor {
             return Err(Error::from_status(StatusCode::FORBIDDEN));
@@ -36,7 +36,7 @@ impl<E: Endpoint> Endpoint for VisitorRedirect<E> {
     type Output = E::Output;
 
     async fn call(&self, req: Request) -> poem::Result<Self::Output> {
-        let Dep(user_context) = Dep::<UserIdContext>::from_request_without_body(&req).await?;
+        let Dep(user_context) = Dep::<UserPointer>::from_request_without_body(&req).await?;
         if user_context.role == Role::Visitor {
             return Err(Error::from_response(
                 Redirect::see_other(LOGIN_ROUTE).into_response(),

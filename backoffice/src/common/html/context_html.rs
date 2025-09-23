@@ -1,6 +1,6 @@
 use crate::common::html::HtmlBuilder;
 use crate::common::html::locale::top::TopBuildLocale;
-use crate::user::model::user_model::UserIdContext;
+use crate::user::pointer::user_pointer::UserPointer;
 use crate::user::role::Role;
 use crate::user::route::login::LOGIN_ROUTE;
 use crate::user::route::user::USER_ROUTE;
@@ -55,13 +55,13 @@ struct ContextHtmlCellData {
 
 pub struct ContextHtmlBuilder {
     flash: Option<Flash>,
-    user_id_context: UserIdContext,
+    user_id_context: UserPointer,
     data: RwLock<ContextHtmlCellData>,
     pub locale: Locale,
 }
 
 impl ContextHtmlBuilder {
-    pub fn new(flash: Option<Flash>, locale: Locale, user_id_context: UserIdContext) -> Self {
+    pub fn new(flash: Option<Flash>, locale: Locale, user_id_context: UserPointer) -> Self {
         Self {
             flash,
             user_id_context,
