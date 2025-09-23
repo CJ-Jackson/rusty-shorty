@@ -199,21 +199,22 @@ impl<T> ResponseError for ErrorStack<T> {
     where
         Self: Error + Send + Sync + 'static,
     {
+        let status = self.status();
         let body = if cfg!(debug_assertions) {
-            format!("{:?}", self.0)
+            format!("{}\n{:?}", status, self.0)
         } else {
-            format!("{}", self.0)
+            format!("{}\n{}", status, self.0)
         };
         match self.0.downcast_ref::<ErrorStackUseJson>() {
             Some(_) => {
                 let json = Json(json!({"msg": body}));
                 let mut resp = json.into_response();
-                resp.set_status(self.status());
+                resp.set_status(status);
                 resp
             }
             None => {
                 let mut resp = body.into_response();
-                resp.set_status(self.status());
+                resp.set_status(status);
                 resp
             }
         }
