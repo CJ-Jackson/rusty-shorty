@@ -52,3 +52,7 @@ impl<T: FromContext> Dep<T> {
         T::from_context(&Context { req: None }).await
     }
 }
+
+pub async fn fetch_context<T: FromContext>() -> Result<T, Report<ContextError>> {
+    Dep::<T>::without_request().await
+}
