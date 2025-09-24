@@ -90,6 +90,7 @@ pub struct AddEditUrlValidated {
     pub url_redirect: Url,
 }
 
+#[derive(Debug)]
 pub struct AddEditUrlError {
     pub url_path: Result<Field, FieldError>,
     pub url_redirect: Result<Url, UrlError>,

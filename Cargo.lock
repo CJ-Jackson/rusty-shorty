@@ -190,6 +190,7 @@ dependencies = [
  "cjtoolkit-structured-validator",
  "error-stack",
  "maud",
+ "mry",
  "paspio",
  "poem",
  "regex",
