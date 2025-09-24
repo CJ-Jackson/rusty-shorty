@@ -16,8 +16,12 @@ impl UserLoginForm {
         UserLoginFormResult((|| {
             let mut flag = FlagCounter::new();
 
-            let username = flag.check(Username::parse_user_login(Some(self.username.as_str())));
-            let password = flag.check(Password::parse_user_login(Some(self.password.as_str())));
+            let username = flag.check(Username::parse_user_login(Some(
+                self.username.as_str().trim(),
+            )));
+            let password = flag.check(Password::parse_user_login(Some(
+                self.password.as_str().trim(),
+            )));
 
             if flag.is_flagged() {
                 return Err(UserLoginFormError { username, password });

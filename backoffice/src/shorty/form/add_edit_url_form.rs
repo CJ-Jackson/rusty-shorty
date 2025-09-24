@@ -25,8 +25,9 @@ impl AddEditUrlForm {
             async {
                 let mut flag = FlagCounter::new();
 
-                let url_path = flag.check(Field::parse_url_path(Some(&self.url_path)));
-                let url_redirect = flag.check(Url::parse_url_redirect(Some(&self.url_redirect)));
+                let url_path = flag.check(Field::parse_url_path(Some(&self.url_path.trim())));
+                let url_redirect =
+                    flag.check(Url::parse_url_redirect(Some(&self.url_redirect.trim())));
 
                 if flag.is_flagged() {
                     return Err(AddEditUrlError {

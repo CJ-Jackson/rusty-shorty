@@ -29,10 +29,13 @@ impl AddUserForm {
             async {
                 let mut flag = FlagCounter::new();
 
-                let username =
-                    flag.check(Username::parse_user_add(Some(&self.username), service, None).await);
-                let (password, password_confirm) =
-                    Password::parse_password_add(Some(&self.password), &self.password_confirm);
+                let username = flag.check(
+                    Username::parse_user_add(Some(&self.username.trim()), service, None).await,
+                );
+                let (password, password_confirm) = Password::parse_password_add(
+                    Some(&self.password.trim()),
+                    &self.password_confirm.trim(),
+                );
                 let password = flag.check(password);
                 let password_confirm = flag.check(password_confirm);
 

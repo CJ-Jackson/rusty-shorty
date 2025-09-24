@@ -23,8 +23,10 @@ impl EditPasswordManagerForm {
             async {
                 let mut flag = FlagCounter::new();
 
-                let (password, password_confirm) =
-                    Password::parse_password_add(Some(&self.password), &self.password_confirm);
+                let (password, password_confirm) = Password::parse_password_add(
+                    Some(&self.password.trim()),
+                    &self.password_confirm.trim(),
+                );
                 let password = flag.check(password);
                 let password_confirm = flag.check(password_confirm);
 

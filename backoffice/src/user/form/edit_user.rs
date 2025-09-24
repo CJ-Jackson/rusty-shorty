@@ -32,7 +32,7 @@ impl EditUserForm {
 
                 let username = flag.check(
                     Username::parse_user_add(
-                        Some(&self.username),
+                        Some(&self.username.trim()),
                         service,
                         Some(current_user_name),
                     )
