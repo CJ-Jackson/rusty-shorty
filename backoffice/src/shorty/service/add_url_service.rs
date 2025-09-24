@@ -36,3 +36,48 @@ impl FromContext for AddUrlService {
         Ok(Self::new(ctx.inject().await?))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::shorty::form::add_edit_url_form::AddEditUrlForm;
+    use crate::shorty::repository::shorty_repository::ShortyRepositoryError;
+
+    #[tokio::test]
+    async fn test_add_url_submit_success() {
+        let mut shorty_repository = ShortyRepository::new_mock();
+        shorty_repository
+            .mock_add_url_redirect("hello", "http://hello.com", 1)
+            .returns_once(Ok(()));
+
+        let add_url_service = AddUrlService::new(shorty_repository);
+
+        let mut add_edit_url_form = AddEditUrlForm::default();
+        add_edit_url_form.url_path = "hello".to_string();
+        add_edit_url_form.url_redirect = "http://hello.com".to_string();
+
+        let validated = add_edit_url_form.as_validated().await.0.unwrap();
+
+        let result = add_url_service.add_url_submit(&validated, 1);
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_add_url_submit_db_error() {
+        let mut shorty_repository = ShortyRepository::new_mock();
+        shorty_repository
+            .mock_add_url_redirect("hello", "http://hello.com", 1)
+            .returns_once(Err(Report::new(ShortyRepositoryError::QueryError)));
+
+        let add_url_service = AddUrlService::new(shorty_repository);
+
+        let mut add_edit_url_form = AddEditUrlForm::default();
+        add_edit_url_form.url_path = "hello".to_string();
+        add_edit_url_form.url_redirect = "http://hello.com".to_string();
+
+        let validated = add_edit_url_form.as_validated().await.0.unwrap();
+
+        let result = add_url_service.add_url_submit(&validated, 1);
+        assert!(result.is_err());
+    }
+}
