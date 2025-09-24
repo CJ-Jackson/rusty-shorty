@@ -1,10 +1,12 @@
-use error_stack::{Report, ResultExt};
+use crate::context::{Context, ContextError, FromContext};
+use error_stack::{FutureExt, Report, ResultExt};
 use figment::providers::{Format, Serialized, Toml};
 use figment::{Figment, Profile};
 use poem::PoemConfig;
 use serde::{Deserialize, Serialize};
 use sqlite::SqliteConfig;
 use std::env::var;
+use std::ops::Deref;
 use std::sync::{Arc, Weak};
 use thiserror::Error;
 use tokio::sync::OnceCell;
@@ -70,5 +72,32 @@ impl Config {
             .await;
 
         Ok(Arc::downgrade(config?))
+    }
+}
+
+pub struct ConfigPointer(Arc<Config>);
+
+impl Deref for ConfigPointer {
+    type Target = Config;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl Clone for ConfigPointer {
+    fn clone(&self) -> Self {
+        Self(Arc::clone(&self.0))
+    }
+}
+
+impl FromContext for ConfigPointer {
+    async fn from_context(_ctx: &'_ Context<'_>) -> Result<Self, Report<ContextError>> {
+        let config = Config::fetch()
+            .change_context(ContextError::ConfigError)
+            .await?;
+        let config = config
+            .upgrade()
+            .ok_or_else(|| Report::new(ContextError::ConfigError).attach("Config not found"))?;
+        Ok(Self(config))
     }
 }

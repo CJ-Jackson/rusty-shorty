@@ -1,3 +1,4 @@
+use crate::config::ConfigPointer;
 use crate::context::{Context, ContextError, FromContext};
 use crate::error::{ExtraResultExt, FromIntoStackError};
 use crate::password::Password;
@@ -84,11 +85,8 @@ impl FromContext for SqliteClient {
     async fn from_context(ctx: &'_ Context<'_>) -> Result<Self, Report<ContextError>> {
         let sqlite_client: Result<&Self, Report<ContextError>> = SQLITE_CLIENT_CACHE
             .get_or_try_init(|| async {
-                match ctx.config.upgrade() {
-                    None => Err(ContextError::Other.into()),
-                    Some(config) => Ok(Self::new(config.sqlite.path.clone())
-                        .change_context(ContextError::Other)?),
-                }
+                let config: ConfigPointer = ctx.inject().await?;
+                Ok(Self::new(config.sqlite.path.clone()).change_context(ContextError::Other)?)
             })
             .await;
         Ok(sqlite_client?.clone())

@@ -1,9 +1,6 @@
-use crate::config::Config;
 use crate::error::FromErrorStack;
 use error_stack::Report;
-use poem::http::StatusCode;
 use poem::{FromRequest, Request, RequestBody};
-use std::sync::Weak;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -23,7 +20,6 @@ pub trait FromContext: Sized + Send + Sync {
 }
 
 pub struct Context<'a> {
-    pub config: Weak<Config>,
     pub req: &'a Request,
 }
 
@@ -37,11 +33,7 @@ pub struct Dep<T: FromContext>(pub T);
 
 impl<'a, T: FromContext> FromRequest<'a> for Dep<T> {
     async fn from_request(req: &'a Request, _body: &mut RequestBody) -> poem::Result<Self> {
-        let config = match Config::fetch().await {
-            Ok(config) => config,
-            Err(_) => return Err(poem::Error::from_status(StatusCode::INTERNAL_SERVER_ERROR)),
-        };
-        let context = Box::pin(Context { config, req });
+        let context = Box::pin(Context { req });
         Ok(Self(
             T::from_context(&context)
                 .await
