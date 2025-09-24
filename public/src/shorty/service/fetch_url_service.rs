@@ -43,3 +43,49 @@ impl FromContext for FetchUrlService {
         Ok(Self::new(ctx.inject().await?))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::shorty::repository::shorty::ShortyRepositoryError;
+
+    #[test]
+    fn test_fetch_url_success() {
+        let mut shorty_repository = ShortyRepository::new_mock();
+        shorty_repository
+            .mock_fetch_url("hello")
+            .returns_once(Ok(Some(UrlRedirect {
+                url_redirect: "hi".to_string(),
+            })));
+
+        let fetch_url_service = FetchUrlService::new(shorty_repository);
+        let url_redirect = fetch_url_service.fetch_url("hello").unwrap();
+        assert_eq!(url_redirect.url_redirect, "hi");
+    }
+
+    #[test]
+    fn test_fetch_url_not_found() {
+        let mut shorty_repository = ShortyRepository::new_mock();
+        shorty_repository
+            .mock_fetch_url("hello")
+            .returns_once(Ok(None));
+
+        let fetch_url_service = FetchUrlService::new(shorty_repository);
+        let url_redirect = fetch_url_service.fetch_url("hello");
+        assert!(url_redirect.is_err());
+        let error = url_redirect.as_ref().err().unwrap();
+        let http_code = error.downcast_ref::<StatusCode>().unwrap();
+        assert_eq!(http_code, &StatusCode::NOT_FOUND);
+    }
+
+    #[test]
+    fn test_fetch_url_db_error() {
+        let mut shorty_repository = ShortyRepository::new_mock();
+        shorty_repository
+            .mock_fetch_url("hello")
+            .returns_once(Err(Report::new(ShortyRepositoryError::RowValueError)));
+        let fetch_url_service = FetchUrlService::new(shorty_repository);
+        let url_redirect = fetch_url_service.fetch_url("hello");
+        assert!(url_redirect.is_err());
+    }
+}

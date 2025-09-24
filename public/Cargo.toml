@@ -10,3 +10,4 @@ shared = { workspace = true }
 poem = { workspace = true }
 rusqlite = { workspace = true }
 cjtoolkit-structured-validator = { workspace = true }
+mry = { workspace = true }

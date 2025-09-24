@@ -18,15 +18,38 @@ pub enum ShortyRepositoryError {
     LockError,
 }
 
+#[mry::mry]
 pub struct ShortyRepository {
-    sqlite_client: SqliteClient,
+    sqlite_client: Option<SqliteClient>,
 }
 
 impl ShortyRepository {
     pub fn new(sqlite_client: SqliteClient) -> Self {
-        Self { sqlite_client }
+        Self {
+            sqlite_client: Some(sqlite_client),
+            mry: Default::default(),
+        }
     }
 
+    fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<ShortyRepositoryError>> {
+        let guard = self
+            .sqlite_client
+            .as_ref()
+            .expect("Client")
+            .get_conn()
+            .lock()
+            .map_err(|err| {
+                Report::new(ShortyRepositoryError::LockError)
+                    .attach(err.to_string())
+                    .log_it()
+                    .attach(StatusCode::INTERNAL_SERVER_ERROR)
+            })?;
+        Ok(guard)
+    }
+}
+
+#[mry::mry]
+impl ShortyRepository {
     pub fn fetch_url(
         &self,
         path: &str,
@@ -55,15 +78,14 @@ impl ShortyRepository {
 
         Ok(row)
     }
+}
 
-    fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<ShortyRepositoryError>> {
-        let guard = self.sqlite_client.get_conn().lock().map_err(|err| {
-            Report::new(ShortyRepositoryError::LockError)
-                .attach(err.to_string())
-                .log_it()
-                .attach(StatusCode::INTERNAL_SERVER_ERROR)
-        })?;
-        Ok(guard)
+#[cfg(test)]
+impl ShortyRepository {
+    pub fn new_mock() -> Self {
+        mry::new!(Self {
+            sqlite_client: None
+        })
     }
 }
 
