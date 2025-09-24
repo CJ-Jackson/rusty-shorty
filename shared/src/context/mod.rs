@@ -20,7 +20,7 @@ pub trait FromContext: Sized + Send + Sync {
 }
 
 pub struct Context<'a> {
-    pub req: &'a Request,
+    pub req: Option<&'a Request>,
 }
 
 impl Context<'_> {
@@ -33,11 +33,17 @@ pub struct Dep<T: FromContext>(pub T);
 
 impl<'a, T: FromContext> FromRequest<'a> for Dep<T> {
     async fn from_request(req: &'a Request, _body: &mut RequestBody) -> poem::Result<Self> {
-        let context = Box::pin(Context { req });
+        let context = Box::pin(Context { req: Some(req) });
         Ok(Self(
             T::from_context(&context)
                 .await
                 .map_err(poem::Error::from_error_stack)?,
         ))
+    }
+}
+
+impl<T: FromContext> Dep<T> {
+    pub async fn without_request() -> Result<T, Report<ContextError>> {
+        T::from_context(&Context { req: None }).await
     }
 }

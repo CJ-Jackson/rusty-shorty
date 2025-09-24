@@ -41,7 +41,10 @@ impl UserCheckService {
 
 impl FromContext for UserCheckService {
     async fn from_context(ctx: &'_ Context<'_>) -> Result<Self, Report<ContextError>> {
-        let cookie = ctx.req.cookie();
+        let req = ctx
+            .req
+            .ok_or_else(|| Report::new(ContextError::RequestError))?;
+        let cookie = req.cookie();
         Ok(Self::new(
             ctx.inject().await?,
             cookie

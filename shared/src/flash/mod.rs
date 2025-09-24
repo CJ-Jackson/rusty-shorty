@@ -75,7 +75,10 @@ impl FlashMessage for Session {
 
 impl FromContext for Option<Flash> {
     async fn from_context(ctx: &'_ Context<'_>) -> Result<Self, Report<ContextError>> {
-        Ok(match ctx.req.data::<Session>() {
+        let req = ctx
+            .req
+            .ok_or_else(|| Report::new(ContextError::RequestError))?;
+        Ok(match req.data::<Session>() {
             None => None,
             Some(session) => session.get_flash(),
         })
