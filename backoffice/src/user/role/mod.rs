@@ -5,23 +5,6 @@ use serde::{Deserialize, Serialize};
 pub mod user_role_check;
 pub mod visitor_only;
 
-struct RoleVisitor;
-
-impl<'de> Visitor<'de> for RoleVisitor {
-    type Value = Role;
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        formatter.write_str("a role")
-    }
-
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        Role::try_from(v).map_err(|_| E::custom("invalid role"))
-    }
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Role {
     Root,
@@ -49,6 +32,23 @@ impl<'de> Deserialize<'de> for Role {
     where
         D: serde::Deserializer<'de>,
     {
+        struct RoleVisitor;
+
+        impl<'de> Visitor<'de> for RoleVisitor {
+            type Value = Role;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("a role")
+            }
+
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Role::try_from(v).map_err(|_| E::custom("invalid role"))
+            }
+        }
+
         deserializer.deserialize_str(RoleVisitor)
     }
 }
