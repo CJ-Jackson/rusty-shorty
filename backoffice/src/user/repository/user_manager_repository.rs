@@ -28,6 +28,20 @@ impl UserManagerRepository {
         Self { sqlite_client }
     }
 
+    fn borrow_conn(
+        &'_ self,
+    ) -> Result<MutexGuard<'_, Connection>, Report<UserManagerRepositoryError>> {
+        let guard = self.sqlite_client.get_conn().lock().map_err(|err| {
+            Report::new(UserManagerRepositoryError::LockError)
+                .attach(StatusCode::INTERNAL_SERVER_ERROR)
+                .attach(err.to_string())
+                .log_it()
+        })?;
+        Ok(guard)
+    }
+}
+
+impl UserManagerRepository {
     pub fn add_user(
         &self,
         username: String,
@@ -213,18 +227,6 @@ impl UserManagerRepository {
             .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         Ok(row)
-    }
-
-    fn borrow_conn(
-        &'_ self,
-    ) -> Result<MutexGuard<'_, Connection>, Report<UserManagerRepositoryError>> {
-        let guard = self.sqlite_client.get_conn().lock().map_err(|err| {
-            Report::new(UserManagerRepositoryError::LockError)
-                .attach(StatusCode::INTERNAL_SERVER_ERROR)
-                .attach(err.to_string())
-                .log_it()
-        })?;
-        Ok(guard)
     }
 }
 

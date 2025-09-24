@@ -30,6 +30,18 @@ impl UserRepository {
         Self { sqlite_client }
     }
 
+    fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<UserRepositoryError>> {
+        let guard = self.sqlite_client.get_conn().lock().map_err(|err| {
+            Report::new(UserRepositoryError::LockError)
+                .attach(StatusCode::INTERNAL_SERVER_ERROR)
+                .attach(err.to_string())
+                .log_it()
+        })?;
+        Ok(guard)
+    }
+}
+
+impl UserRepository {
     pub fn add_token(
         &self,
         token: String,
@@ -135,16 +147,6 @@ impl UserRepository {
                 Err(Report::new(UserRepositoryError::NotFoundError).attach(StatusCode::NOT_FOUND))
             }
         }
-    }
-
-    fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<UserRepositoryError>> {
-        let guard = self.sqlite_client.get_conn().lock().map_err(|err| {
-            Report::new(UserRepositoryError::LockError)
-                .attach(StatusCode::INTERNAL_SERVER_ERROR)
-                .attach(err.to_string())
-                .log_it()
-        })?;
-        Ok(guard)
     }
 }
 
