@@ -27,6 +27,11 @@ impl Context<'_> {
     pub async fn inject<T: FromContext>(&self) -> Result<T, Report<ContextError>> {
         T::from_context(self).await
     }
+
+    pub fn req_result(&self) -> Result<&Request, Report<ContextError>> {
+        self.req
+            .ok_or_else(|| Report::new(ContextError::RequestError))
+    }
 }
 
 pub struct Dep<T: FromContext>(pub T);

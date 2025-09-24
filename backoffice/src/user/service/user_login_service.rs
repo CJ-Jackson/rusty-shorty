@@ -51,9 +51,7 @@ impl UserLoginService {
 
 impl FromContext for UserLoginService {
     async fn from_context(ctx: &'_ Context<'_>) -> Result<Self, Report<ContextError>> {
-        let req = ctx
-            .req
-            .ok_or_else(|| Report::new(ContextError::RequestError))?;
+        let req = ctx.req_result()?;
         let cookie = req.cookie();
         Ok(Self::new(
             ctx.inject().await?,

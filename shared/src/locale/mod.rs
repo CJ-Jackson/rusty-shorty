@@ -9,9 +9,7 @@ use std::sync::Arc;
 
 impl FromContext for Locale {
     async fn from_context(ctx: &'_ Context<'_>) -> Result<Self, Report<ContextError>> {
-        let req = ctx
-            .req
-            .ok_or_else(|| Report::new(ContextError::RequestError))?;
+        let req = ctx.req_result()?;
         Locale::from_request_without_body(req)
             .await
             .change_context(ContextError::RequestError)
