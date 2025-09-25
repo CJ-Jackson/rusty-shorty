@@ -167,6 +167,7 @@ pub struct ErrorStackUseJson;
 
 #[derive(Clone)]
 pub struct LogData {
+    pub name: String,
     pub summary: String,
     pub details: String,
 }
@@ -236,6 +237,7 @@ impl FromErrorStack for poem::Error {
             None => Self::from(ErrorStack(err)),
             Some(_) => {
                 let data = LogData {
+                    name: format!("{}", err),
                     summary: format!("{:#}", err),
                     details: format!("{:?}", err),
                 };

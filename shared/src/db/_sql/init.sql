@@ -25,3 +25,12 @@ create table url_redirect
     created_by_user_id integer                           not null,
     foreign key (created_by_user_id) references backoffice_users (id) on delete cascade
 );
+
+create table error_stack
+(
+    id            integer primary key autoincrement not null,
+    error_name    text                              not null,
+    error_summary text                              not null,
+    error_stack   text                              not null,
+    reported_at   text                              not null
+);

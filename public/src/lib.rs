@@ -37,6 +37,6 @@ pub async fn boot() -> Result<(), Report<MainError>> {
 }
 
 async fn catch_all_error(err: poem::Error) -> impl IntoResponse {
-    log_poem_error(&err);
+    log_poem_error(&err).await;
     err.into_response()
 }

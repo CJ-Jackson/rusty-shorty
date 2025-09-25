@@ -2096,6 +2096,7 @@ dependencies = [
  "log",
  "maud",
  "mime",
+ "mry",
  "poem",
  "rmp-serde",
  "rusqlite",
