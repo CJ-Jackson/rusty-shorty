@@ -1,6 +1,7 @@
 pub(crate) mod common;
 pub(crate) mod home;
 pub(crate) mod shorty;
+pub(crate) mod stack;
 pub(crate) mod user;
 
 use crate::common::cache::init_request_cache;
