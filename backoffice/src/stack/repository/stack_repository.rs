@@ -1,6 +1,5 @@
 use crate::stack::model::stack_model::{ListStackModel, StackModel};
 use error_stack::{Report, ResultExt};
-use mry::mry;
 use poem::http::StatusCode;
 use rusqlite::{Connection, OptionalExtension, named_params};
 use shared::context::{Context, ContextError, FromContext};
@@ -76,11 +75,11 @@ impl StackRepository {
         let row = stmt
             .query_one(
                 named_params! {
-                    "id": id
+                    ":id": id
                 },
                 |row| {
                     Ok(StackModel {
-                        id: row.get("in")?,
+                        id: row.get("id")?,
                         error_name: row.get("error_name")?,
                         error_summary: row.get("error_summary")?,
                         error_stack: row.get("error_stack")?,

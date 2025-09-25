@@ -36,9 +36,15 @@ impl NavigationItem {
             },
             Self {
                 name: "User".to_string(),
-                url: "/user/".to_string(),
+                url: "/user".to_string(),
                 tag: "user".to_string(),
                 locale: "top-navigation-user".to_string(),
+            },
+            Self {
+                name: "Stack".to_string(),
+                url: "/stack".to_string(),
+                tag: "stack".to_string(),
+                locale: "top-navigation-stack".to_string(),
             },
         ]
         .into()

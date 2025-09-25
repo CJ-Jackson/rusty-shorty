@@ -119,3 +119,7 @@ body {
         }
     }
 }
+
+.pre {
+    @apply tint-bg rounded text-wrap p-4 mb-2;
+}

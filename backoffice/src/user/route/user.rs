@@ -79,7 +79,7 @@ async fn list_users(
                 }
             }
             @if user_id_context.role == Role::Root {
-                div .text-right mt-3 {
+                div .text-right .mt-3 {
                     a .inline-block href=( format!("{}/add-user", USER_ROUTE)) title=(&user_locale.user_list_action_add_user) { (plus_icon()) }
                 }
             }

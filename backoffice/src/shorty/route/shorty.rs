@@ -75,7 +75,7 @@ async fn list_urls(
                     }
                 }
             }
-            div .text-right mt-3 {
+            div .text-right .mt-3 {
                 a .inline-block href=( format!("{}/add", SHORTY_ROUTE)) title=(lc.action_add) { (add_icon) }
             }
         }).attach_footer(list_url_js_asset())

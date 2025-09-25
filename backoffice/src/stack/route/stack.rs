@@ -1,0 +1,134 @@
+use crate::common::embed::Asset;
+use crate::common::html::context_html::ContextHtmlBuilder;
+use crate::common::icon::{document_magnifying_glass_icon, no_symbol_icon};
+use crate::stack::service::stack_service::StackService;
+use maud::{Markup, PreEscaped, html};
+use poem::web::{Path, Redirect};
+use poem::{Route, get, handler};
+use shared::context::Dep;
+use shared::embed::EmbedAsString;
+use shared::error::FromErrorStack;
+
+pub const STACK_ROUTE: &str = "/stack";
+
+#[handler]
+fn list_error_stack(
+    Dep(stack_service): Dep<StackService>,
+    Dep(context_html_builder): Dep<ContextHtmlBuilder>,
+) -> Markup {
+    let error_stack_list = stack_service.list_error_stack();
+    let open_icon = document_magnifying_glass_icon();
+    let clear_icon = no_symbol_icon();
+
+    let title = "List Error Stack";
+
+    context_html_builder
+        .attach_title(title)
+        .set_current_tag("stack")
+        .attach_content(html! {
+            h1 { (title) }
+            table .table-full {
+                thead {
+                    th { "ID" }
+                    th { "Name" }
+                    th { "Summary" }
+                    th { "Reported At" }
+                    th .action { "Action" }
+                }
+                tbody {
+                    @for error_stack in error_stack_list.iter() {
+                        tr {
+                            td { (error_stack.id) }
+                            td { (error_stack.error_name) }
+                            td { (error_stack.error_summary) }
+                            td .js-date-local { (error_stack.reported_at.to_rfc3339()) }
+                            td .action {
+                                a .icon href=(format!("{}/view/{}", STACK_ROUTE, error_stack.id))
+                                title="View Error Details" { (open_icon) }
+                            }
+                        }
+                    }
+                }
+            }
+            div .text-right .mt-3 {
+                a .inline-block .js-clear-confirm href=(format!("{}/clear", STACK_ROUTE))
+                title="Clear Older than 30 days" { (clear_icon) }
+            }
+        })
+        .attach_footer(list_error_stack_asset())
+        .build()
+}
+
+fn list_error_stack_asset() -> Markup {
+    let js_format_to_local_time = if cfg!(debug_assertions) {
+        Asset::get("js/format_to_local_time.js").as_string()
+    } else {
+        Asset::get("js/format_to_local_time.min.js").as_string()
+    };
+    let js_stack_clear_confirm = if cfg!(debug_assertions) {
+        Asset::get("js/stack_clear_confirm.js").as_string()
+    } else {
+        Asset::get("js/stack_clear_confirm.min.js").as_string()
+    };
+    html! {
+        script type="module"{
+            (PreEscaped(format!("{}\n{}", js_format_to_local_time, js_stack_clear_confirm)))
+        }
+    }
+}
+
+#[handler]
+fn fetch_error_stack_detail(
+    Dep(stack_service): Dep<StackService>,
+    Dep(context_html_builder): Dep<ContextHtmlBuilder>,
+    Path(view_id): Path<i64>,
+) -> poem::Result<Markup> {
+    let item = stack_service
+        .fetch_error_stack(view_id)
+        .map_err(poem::Error::from_error_stack)?;
+
+    let title = format!("Error Stack: {}", item.error_name);
+
+    Ok(context_html_builder
+        .attach_title(&title)
+        .attach_content(html! {
+            h1 { (&title) }
+            h2 { "Reported At" }
+            pre .pre .js-date-local { (item.reported_at.to_rfc3339()) }
+            h2 { "Summary" }
+            pre .pre { (item.error_summary) }
+            h2 { "Stack" }
+            pre .pre { (item.error_stack) }
+        })
+        .attach_footer(fetch_error_stack_detail_asset())
+        .build())
+}
+
+fn fetch_error_stack_detail_asset() -> Markup {
+    let js_format_to_local_time = if cfg!(debug_assertions) {
+        Asset::get("js/format_to_local_time.js").as_string()
+    } else {
+        Asset::get("js/format_to_local_time.min.js").as_string()
+    };
+    html! {
+        script type="module"{
+            (PreEscaped(js_format_to_local_time))
+        }
+    }
+}
+
+#[handler]
+fn clear(Dep(stack_service): Dep<StackService>) -> poem::Result<Redirect> {
+    stack_service
+        .clear()
+        .map_err(poem::Error::from_error_stack)?;
+
+    Ok(Redirect::see_other(STACK_ROUTE.to_owned() + "/"))
+}
+
+pub fn stack_route() -> Route {
+    Route::new()
+        .at("/", get(list_error_stack))
+        .at("/view/:view_id", get(fetch_error_stack_detail))
+        .at("/clear", get(clear))
+}

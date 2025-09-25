@@ -9,6 +9,8 @@ use crate::common::embed::{AssetFilesEndPoint, EMBED_PATH};
 use crate::common::locale::build_locale_resources;
 use crate::home::home_route;
 use crate::shorty::route::shorty::{SHORTY_ROUTE, shorty_route};
+use crate::stack::route::stack::{STACK_ROUTE, stack_route};
+use crate::user::role::user_role_check::must_be_root;
 use crate::user::role::visitor_only::visitor_redirect;
 use crate::user::route::login::login_route;
 use crate::user::route::user::{USER_ROUTE, user_route};
@@ -40,6 +42,7 @@ pub async fn boot() -> Result<(), Report<MainError>> {
         .nest(USER_ROUTE, visitor_redirect(user_route()))
         .nest(SHORTY_ROUTE, visitor_redirect(shorty_route()))
         .nest(CSRF_PATH, route_csrf())
+        .nest(STACK_ROUTE, visitor_redirect(must_be_root(stack_route())))
         .nest(EMBED_PATH, AssetFilesEndPoint::new());
 
     let route = route

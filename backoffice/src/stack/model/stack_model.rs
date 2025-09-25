@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 
 pub struct StackModel {
+    #[allow(dead_code)]
     pub id: i64,
     pub error_name: String,
     pub error_summary: String,
