@@ -1,9 +1,11 @@
 use crate::user::form::edit_password_manager::EditPasswordManagerValidated;
+use crate::user::layer::password_layer::PasswordLayer;
 use crate::user::model::user_manager_model::FetchUser;
 use crate::user::repository::user_manager_repository::UserManagerRepository;
 use error_stack::{Report, ResultExt};
 use poem::http::StatusCode;
 use shared::context::{Context, ContextError, FromContext};
+use shared::error::ExtraResultExt;
 use shared::password::Password;
 use thiserror::Error;
 
@@ -21,12 +23,17 @@ pub enum EditPasswordServiceError {
 
 pub struct EditPasswordService {
     user_manager_repository: UserManagerRepository,
+    password_layer: PasswordLayer,
 }
 
 impl EditPasswordService {
-    pub fn new(user_manager_repository: UserManagerRepository) -> Self {
+    pub fn new(
+        user_manager_repository: UserManagerRepository,
+        password_layer: PasswordLayer,
+    ) -> Self {
         Self {
             user_manager_repository,
+            password_layer,
         }
     }
 
@@ -40,7 +47,9 @@ impl EditPasswordService {
                 user_id,
                 self.hash_password(password.password.as_str())?
                     .encode_to_msg_pack()
-                    .change_context(EditPasswordServiceError::PasswordSerializeError)?,
+                    .change_context(EditPasswordServiceError::PasswordSerializeError)
+                    .log_it()
+                    .attach(StatusCode::INTERNAL_SERVER_ERROR)?,
             )
             .change_context(EditPasswordServiceError::DbError)?;
 
@@ -57,7 +66,8 @@ impl EditPasswordService {
     }
 
     fn hash_password(&self, password: &str) -> Result<Password, Report<EditPasswordServiceError>> {
-        Password::hash_password(password.to_string())
+        self.password_layer
+            .hash_password(password)
             .change_context(EditPasswordServiceError::PasswordHashError)
             .attach(StatusCode::INTERNAL_SERVER_ERROR)
     }
@@ -65,6 +75,6 @@ impl EditPasswordService {
 
 impl FromContext for EditPasswordService {
     async fn from_context(ctx: &'_ Context<'_>) -> Result<Self, Report<ContextError>> {
-        Ok(Self::new(ctx.inject().await?))
+        Ok(Self::new(ctx.inject().await?, ctx.inject().await?))
     }
 }

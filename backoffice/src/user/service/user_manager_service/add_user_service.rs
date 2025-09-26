@@ -1,9 +1,11 @@
 use crate::user::form::add_user::AddUserValidated;
+use crate::user::layer::password_layer::PasswordLayer;
 use crate::user::repository::user_manager_repository::UserManagerRepository;
 use cjtoolkit_structured_validator::types::username::IsUsernameTakenAsync;
 use error_stack::{Report, ResultExt};
 use poem::http::StatusCode;
 use shared::context::{Context, ContextError, FromContext};
+use shared::error::ExtraResultExt;
 use shared::password::Password;
 use thiserror::Error;
 
@@ -19,12 +21,17 @@ pub enum AddUserServiceError {
 
 pub struct AddUserService {
     user_manager_repository: UserManagerRepository,
+    password_layer: PasswordLayer,
 }
 
 impl AddUserService {
-    pub fn new(user_manager_repository: UserManagerRepository) -> Self {
+    pub fn new(
+        user_manager_repository: UserManagerRepository,
+        password_layer: PasswordLayer,
+    ) -> Self {
         Self {
             user_manager_repository,
+            password_layer,
         }
     }
 
@@ -37,7 +44,9 @@ impl AddUserService {
                 add_user_validated.username.as_str().to_string(),
                 self.hash_password(add_user_validated.password.as_str())?
                     .encode_to_msg_pack()
-                    .change_context(AddUserServiceError::PasswordSerializeError)?,
+                    .change_context(AddUserServiceError::PasswordSerializeError)
+                    .log_it()
+                    .attach(StatusCode::INTERNAL_SERVER_ERROR)?,
                 &add_user_validated.role,
             )
             .change_context(AddUserServiceError::SubmitFailed)?;
@@ -45,7 +54,8 @@ impl AddUserService {
     }
 
     fn hash_password(&self, password: &str) -> Result<Password, Report<AddUserServiceError>> {
-        Password::hash_password(password.to_string())
+        self.password_layer
+            .hash_password(password)
             .change_context(AddUserServiceError::PasswordHashError)
             .attach(StatusCode::INTERNAL_SERVER_ERROR)
     }
@@ -62,6 +72,6 @@ impl IsUsernameTakenAsync for AddUserService {
 
 impl FromContext for AddUserService {
     async fn from_context(ctx: &'_ Context<'_>) -> Result<Self, Report<ContextError>> {
-        Ok(Self::new(ctx.inject().await?))
+        Ok(Self::new(ctx.inject().await?, ctx.inject().await?))
     }
 }
