@@ -1,6 +1,7 @@
 use crate::common::embed::Asset;
 use crate::common::html::context_html::ContextHtmlBuilder;
 use crate::common::icon::{document_magnifying_glass_icon, no_symbol_icon};
+use crate::stack::route::locale::stack_locale::{StackFetchLocale, StackLocale};
 use crate::stack::service::stack_service::StackService;
 use maud::{Markup, PreEscaped, html};
 use poem::session::Session;
@@ -22,7 +23,8 @@ fn list_error_stack(
     let open_icon = document_magnifying_glass_icon();
     let clear_icon = no_symbol_icon();
 
-    let title = "List Error Stack";
+    let lc = StackLocale::new(&context_html_builder.locale);
+    let title = lc.title.as_str();
 
     context_html_builder
         .attach_title(title)
@@ -31,11 +33,11 @@ fn list_error_stack(
             h1 { (title) }
             table .table-full {
                 thead {
-                    th { "ID" }
-                    th { "Name" }
-                    th { "Summary" }
-                    th { "Reported At" }
-                    th .action { "Action" }
+                    th { (lc.head_id) }
+                    th { (lc.head_name) }
+                    th { (lc.head_summary) }
+                    th { (lc.head_reported) }
+                    th .action { (lc.head_action) }
                 }
                 tbody {
                     @for error_stack in error_stack_list.iter() {
@@ -46,7 +48,7 @@ fn list_error_stack(
                             td .js-date-local { (error_stack.reported_at.to_rfc3339()) }
                             td .action {
                                 a .icon href=(format!("{}/view/{}", STACK_ROUTE, error_stack.id))
-                                title="View Error Details" { (open_icon) }
+                                title=(lc.action_details) { (open_icon) }
                             }
                         }
                     }
@@ -54,7 +56,7 @@ fn list_error_stack(
             }
             div .text-right .mt-3 {
                 a .inline-block .js-clear-confirm href=(format!("{}/clear", STACK_ROUTE))
-                title="Clear Older than 30 days" { (clear_icon) }
+                title=(lc.action_clear) { (clear_icon) }
             }
         })
         .attach_footer(list_error_stack_asset())
@@ -89,17 +91,18 @@ fn fetch_error_stack_detail(
         .fetch_error_stack(view_id)
         .map_err(poem::Error::from_error_stack)?;
 
-    let title = format!("Error Stack: {}", item.error_name);
+    let lc = StackFetchLocale::new(&context_html_builder.locale, item.error_name.as_str());
+    let title = lc.title.as_str();
 
     Ok(context_html_builder
-        .attach_title(&title)
+        .attach_title(title)
         .attach_content(html! {
-            h1 { (&title) }
-            h2 { "Reported At" }
+            h1 { (title) }
+            h2 { (lc.head_reported) }
             pre .pre .js-date-local { (item.reported_at.to_rfc3339()) }
-            h2 { "Summary" }
+            h2 { (lc.head_summary) }
             pre .pre { (item.error_summary) }
-            h2 { "Stack" }
+            h2 { (lc.head_stack) }
             pre .pre { (item.error_stack) }
         })
         .attach_footer(fetch_error_stack_detail_asset())

@@ -17,6 +17,7 @@ pub struct NavigationItem {
     url: String,
     tag: String,
     locale: String,
+    role: Role,
 }
 
 impl NavigationItem {
@@ -27,24 +28,28 @@ impl NavigationItem {
                 url: "/".to_string(),
                 tag: "home".to_string(),
                 locale: "top-navigation-home".to_string(),
+                role: Role::Visitor,
             },
             Self {
                 name: "URL Redirect".to_string(),
                 url: "/shorty".to_string(),
                 tag: "shorty".to_string(),
                 locale: "top-navigation-url".to_string(),
+                role: Role::User,
             },
             Self {
                 name: "User".to_string(),
                 url: "/user".to_string(),
                 tag: "user".to_string(),
                 locale: "top-navigation-user".to_string(),
+                role: Role::User,
             },
             Self {
                 name: "Stack".to_string(),
                 url: "/stack".to_string(),
                 tag: "stack".to_string(),
                 locale: "top-navigation-stack".to_string(),
+                role: Role::Root,
             },
         ]
         .into()
@@ -189,6 +194,9 @@ impl ContextHtmlBuilder {
     fn parse_navigation(&self, tag: String) -> Markup {
         let mut output = "".to_string();
         for item in NavigationItem::navigations() {
+            if self.user_id_context.role < item.role {
+                continue;
+            }
             let html = if item.tag == tag {
                 html! {
                     span .nav-item .nav-item-active {
