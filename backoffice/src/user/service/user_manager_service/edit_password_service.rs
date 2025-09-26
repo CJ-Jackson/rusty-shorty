@@ -78,3 +78,122 @@ impl FromContext for EditPasswordService {
         Ok(Self::new(ctx.inject().await?, ctx.inject().await?))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod test_edit_password_submit {
+        use super::*;
+        use crate::user::repository::user_manager_repository::UserManagerRepositoryError;
+        use mry::Any;
+        use shared::password::PasswordError;
+
+        #[test]
+        fn test_submit_success() {
+            let password = EditPasswordManagerValidated::new_test_data();
+            let mut user_manager_repository = UserManagerRepository::new_mock();
+            let mut password_layer = PasswordLayer::new_mock();
+
+            password_layer
+                .mock_hash_password(password.password.as_str())
+                .returns_once(Ok(Password::Version1 {
+                    argon2: password.password.as_str().to_string(),
+                }));
+
+            user_manager_repository
+                .mock_edit_password(1, Any)
+                .returns_once(Ok(()));
+
+            let service = EditPasswordService::new(user_manager_repository, password_layer);
+            let result = service.edit_password_submit(1, &password);
+            assert!(result.is_ok());
+        }
+
+        #[test]
+        fn test_password_hash_fail() {
+            let password = EditPasswordManagerValidated::new_test_data();
+            let user_manager_repository = UserManagerRepository::new_mock();
+            let mut password_layer = PasswordLayer::new_mock();
+
+            password_layer
+                .mock_hash_password(password.password.as_str())
+                .returns_once(Err(Report::new(PasswordError("Failed".to_string()))));
+
+            let service = EditPasswordService::new(user_manager_repository, password_layer);
+            let result = service.edit_password_submit(1, &password);
+            assert!(result.is_err());
+        }
+
+        #[test]
+        fn test_submit_fail() {
+            let password = EditPasswordManagerValidated::new_test_data();
+            let mut user_manager_repository = UserManagerRepository::new_mock();
+            let mut password_layer = PasswordLayer::new_mock();
+
+            password_layer
+                .mock_hash_password(password.password.as_str())
+                .returns_once(Ok(Password::Version1 {
+                    argon2: password.password.as_str().to_string(),
+                }));
+
+            user_manager_repository
+                .mock_edit_password(1, Any)
+                .returns_once(Err(Report::new(UserManagerRepositoryError::QueryError)));
+
+            let service = EditPasswordService::new(user_manager_repository, password_layer);
+            let result = service.edit_password_submit(1, &password);
+            assert!(result.is_err());
+        }
+    }
+
+    mod test_fetch_user {
+        use super::*;
+        use crate::user::repository::user_manager_repository::UserManagerRepositoryError;
+
+        #[test]
+        fn test_fetch_user_success() {
+            let mut user_manager_repository = UserManagerRepository::new_mock();
+            let password_layer = PasswordLayer::new_mock();
+            user_manager_repository
+                .mock_fetch_user(1)
+                .returns_once(Ok(Some(FetchUser {
+                    username: "username".to_string(),
+                    role: Default::default(),
+                })));
+
+            let service = EditPasswordService::new(user_manager_repository, password_layer);
+            let result = service.fetch_user(1);
+            assert!(result.is_ok());
+        }
+
+        #[test]
+        fn test_fetch_user_not_found() {
+            let mut user_manager_repository = UserManagerRepository::new_mock();
+            let password_layer = PasswordLayer::new_mock();
+            user_manager_repository
+                .mock_fetch_user(1)
+                .returns_once(Ok(None));
+
+            let service = EditPasswordService::new(user_manager_repository, password_layer);
+            let result = service.fetch_user(1);
+            assert!(result.is_err());
+            let result = result.err().unwrap();
+            let status_code = result.downcast_ref::<StatusCode>().unwrap();
+            assert_eq!(*status_code, StatusCode::NOT_FOUND);
+        }
+
+        #[test]
+        fn test_fetch_user_error() {
+            let mut user_manager_repository = UserManagerRepository::new_mock();
+            let password_layer = PasswordLayer::new_mock();
+            user_manager_repository
+                .mock_fetch_user(1)
+                .returns_once(Err(Report::new(UserManagerRepositoryError::QueryError)));
+
+            let service = EditPasswordService::new(user_manager_repository, password_layer);
+            let result = service.fetch_user(1);
+            assert!(result.is_err());
+        }
+    }
+}

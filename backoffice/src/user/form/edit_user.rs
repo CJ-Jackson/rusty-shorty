@@ -100,7 +100,7 @@ pub struct EditUserValidated {
 impl EditUserValidated {
     pub fn new_test_data() -> Self {
         Self {
-            username: Username::parse(Some("username")).unwrap(),
+            username: Username::parse(Some("username")).expect("test username"),
             role: Default::default(),
         }
     }

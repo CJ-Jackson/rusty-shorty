@@ -91,6 +91,18 @@ pub struct EditPasswordManagerValidated {
     pub password_confirm: Password,
 }
 
+#[cfg(test)]
+impl EditPasswordManagerValidated {
+    pub fn new_test_data() -> Self {
+        Self {
+            password: Password::parse(Some("aVHTsh_SEGW5[g_c`/uh>~0!YI0'~fJw"))
+                .expect("test password"),
+            password_confirm: Password::parse(Some("aVHTsh_SEGW5[g_c`/uh>~0!YI0'~fJw"))
+                .expect("test password confirm"),
+        }
+    }
+}
+
 pub struct EditPasswordManagerError {
     pub password: Result<Password, PasswordError>,
     pub password_confirm: Result<Password, PasswordError>,

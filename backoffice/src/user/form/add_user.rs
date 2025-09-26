@@ -115,6 +115,20 @@ pub struct AddUserValidated {
     pub role: Role,
 }
 
+#[cfg(test)]
+impl AddUserValidated {
+    pub fn new_test_data() -> Self {
+        Self {
+            username: Username::parse(Some("username")).expect("test username"),
+            password: Password::parse(Some("aVHTsh_SEGW5[g_c`/uh>~0!YI0'~fJw"))
+                .expect("test password"),
+            password_confirm: Password::parse(Some("aVHTsh_SEGW5[g_c`/uh>~0!YI0'~fJw"))
+                .expect("test password confirm"),
+            role: Default::default(),
+        }
+    }
+}
+
 pub struct AddUserError {
     pub username: Result<Username, UsernameError>,
     pub password: Result<Password, PasswordError>,
