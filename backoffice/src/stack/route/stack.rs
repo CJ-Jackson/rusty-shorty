@@ -3,11 +3,13 @@ use crate::common::html::context_html::ContextHtmlBuilder;
 use crate::common::icon::{document_magnifying_glass_icon, no_symbol_icon};
 use crate::stack::service::stack_service::StackService;
 use maud::{Markup, PreEscaped, html};
+use poem::session::Session;
 use poem::web::{Path, Redirect};
 use poem::{Route, get, handler};
 use shared::context::Dep;
 use shared::embed::EmbedAsString;
 use shared::error::FromErrorStack;
+use shared::flash::{Flash, FlashMessage};
 
 pub const STACK_ROUTE: &str = "/stack";
 
@@ -118,11 +120,14 @@ fn fetch_error_stack_detail_asset() -> Markup {
 }
 
 #[handler]
-fn clear(Dep(stack_service): Dep<StackService>) -> poem::Result<Redirect> {
+fn clear(Dep(stack_service): Dep<StackService>, session: &Session) -> poem::Result<Redirect> {
     stack_service
         .clear()
         .map_err(poem::Error::from_error_stack)?;
 
+    session.flash(Flash::Success {
+        msg: "Successfully clear records older than 30 days".to_string(),
+    });
     Ok(Redirect::see_other(STACK_ROUTE.to_owned() + "/"))
 }
 
