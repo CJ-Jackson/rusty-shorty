@@ -10,11 +10,11 @@ pub async fn home_page(Dep(context_html_builder): Dep<ContextHtmlBuilder>) -> Ma
     let title = context_html_builder
         .locale
         .text("home-hello")
-        .unwrap_or("Hello World".to_string());
+        .unwrap_or("Welcome".to_string());
     let paragraph = context_html_builder
         .locale
         .text("home-paragraph")
-        .unwrap_or("Nice to meet you".to_string());
+        .unwrap_or("Check out the navigation above".to_string());
     context_html_builder
         .attach_title(&title)
         .set_current_tag("home")

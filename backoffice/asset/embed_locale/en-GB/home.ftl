@@ -1,3 +1,3 @@
 # Home
-home-hello = Hello World
-home-paragraph = Nice to meet you
+home-hello = Welcome
+home-paragraph = Check out the navigation above
