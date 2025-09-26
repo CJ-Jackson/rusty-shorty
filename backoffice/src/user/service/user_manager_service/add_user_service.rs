@@ -75,3 +75,79 @@ impl FromContext for AddUserService {
         Ok(Self::new(ctx.inject().await?, ctx.inject().await?))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::user::repository::user_manager_repository::UserManagerRepositoryError;
+    use mry::Any;
+    use shared::password::PasswordError;
+
+    #[test]
+    fn test_add_user_success() {
+        let add_user_validated = AddUserValidated::new_test_data();
+
+        let mut user_manager_repository = UserManagerRepository::new_mock();
+        let mut password_layer = PasswordLayer::new_mock();
+
+        password_layer
+            .mock_hash_password(add_user_validated.password.as_str())
+            .returns_once(Ok(Password::Version1 {
+                argon2: add_user_validated.password.as_str().to_string(),
+            }));
+
+        user_manager_repository
+            .mock_add_user(
+                add_user_validated.username.as_str().to_string(),
+                Any,
+                add_user_validated.role.clone(),
+            )
+            .returns_once(Ok(()));
+
+        let service = AddUserService::new(user_manager_repository, password_layer);
+        let result = service.add_user_submit(&add_user_validated);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_add_user_hash_fail() {
+        let add_user_validated = AddUserValidated::new_test_data();
+
+        let user_manager_repository = UserManagerRepository::new_mock();
+        let mut password_layer = PasswordLayer::new_mock();
+
+        password_layer
+            .mock_hash_password(add_user_validated.password.as_str())
+            .returns_once(Err(Report::new(PasswordError("Failed".to_string()))));
+
+        let service = AddUserService::new(user_manager_repository, password_layer);
+        let result = service.add_user_submit(&add_user_validated);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_add_user_db_fail() {
+        let add_user_validated = AddUserValidated::new_test_data();
+
+        let mut user_manager_repository = UserManagerRepository::new_mock();
+        let mut password_layer = PasswordLayer::new_mock();
+
+        password_layer
+            .mock_hash_password(add_user_validated.password.as_str())
+            .returns_once(Ok(Password::Version1 {
+                argon2: add_user_validated.password.as_str().to_string(),
+            }));
+
+        user_manager_repository
+            .mock_add_user(
+                add_user_validated.username.as_str().to_string(),
+                Any,
+                add_user_validated.role.clone(),
+            )
+            .returns_once(Err(Report::new(UserManagerRepositoryError::QueryError)));
+
+        let service = AddUserService::new(user_manager_repository, password_layer);
+        let result = service.add_user_submit(&add_user_validated);
+        assert!(result.is_err());
+    }
+}
