@@ -21,26 +21,37 @@ pub enum UserRepositoryError {
     NotFoundError,
 }
 
+#[mry::mry]
 pub struct UserRepository {
-    sqlite_client: SqliteClient,
+    sqlite_client: Option<SqliteClient>,
 }
 
 impl UserRepository {
     pub fn new(sqlite_client: SqliteClient) -> Self {
-        Self { sqlite_client }
+        Self {
+            sqlite_client: Some(sqlite_client),
+            mry: Default::default(),
+        }
     }
 
     fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<UserRepositoryError>> {
-        let guard = self.sqlite_client.get_conn().lock().map_err(|err| {
-            Report::new(UserRepositoryError::LockError)
-                .attach(StatusCode::INTERNAL_SERVER_ERROR)
-                .attach(err.to_string())
-                .log_it()
-        })?;
+        let guard = self
+            .sqlite_client
+            .as_ref()
+            .expect("Client")
+            .get_conn()
+            .lock()
+            .map_err(|err| {
+                Report::new(UserRepositoryError::LockError)
+                    .attach(StatusCode::INTERNAL_SERVER_ERROR)
+                    .attach(err.to_string())
+                    .log_it()
+            })?;
         Ok(guard)
     }
 }
 
+#[mry::mry]
 impl UserRepository {
     pub fn add_token(
         &self,
@@ -147,6 +158,15 @@ impl UserRepository {
                 Err(Report::new(UserRepositoryError::NotFoundError).attach(StatusCode::NOT_FOUND))
             }
         }
+    }
+}
+
+#[cfg(test)]
+impl UserRepository {
+    pub fn new_mock() -> Self {
+        mry::new!(Self {
+            sqlite_client: None
+        })
     }
 }
 
