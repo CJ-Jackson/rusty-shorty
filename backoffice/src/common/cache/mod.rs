@@ -32,6 +32,6 @@ impl RequestCacheExt for poem::Request {
 
 impl RequestCacheExt for Context<'_> {
     fn request_cache(&self) -> Arc<Mutex<BackofficeRequestCache>> {
-        self.req.expect("Request").request_cache()
+        self.req_result().expect("Request").request_cache()
     }
 }

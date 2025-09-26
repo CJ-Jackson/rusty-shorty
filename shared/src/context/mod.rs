@@ -20,7 +20,7 @@ pub trait FromContext: Sized + Send + Sync {
 }
 
 pub struct Context<'a> {
-    pub req: Option<&'a Request>,
+    req: Option<&'a Request>,
 }
 
 impl Context<'_> {
