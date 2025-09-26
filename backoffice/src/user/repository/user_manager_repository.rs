@@ -19,28 +19,39 @@ pub enum UserManagerRepositoryError {
     LockError,
 }
 
+#[mry::mry]
 pub struct UserManagerRepository {
-    sqlite_client: SqliteClient,
+    sqlite_client: Option<SqliteClient>,
 }
 
 impl UserManagerRepository {
     pub fn new(sqlite_client: SqliteClient) -> Self {
-        Self { sqlite_client }
+        Self {
+            sqlite_client: Some(sqlite_client),
+            mry: Default::default(),
+        }
     }
 
     fn borrow_conn(
         &'_ self,
     ) -> Result<MutexGuard<'_, Connection>, Report<UserManagerRepositoryError>> {
-        let guard = self.sqlite_client.get_conn().lock().map_err(|err| {
-            Report::new(UserManagerRepositoryError::LockError)
-                .attach(StatusCode::INTERNAL_SERVER_ERROR)
-                .attach(err.to_string())
-                .log_it()
-        })?;
+        let guard = self
+            .sqlite_client
+            .as_ref()
+            .expect("Should return client")
+            .get_conn()
+            .lock()
+            .map_err(|err| {
+                Report::new(UserManagerRepositoryError::LockError)
+                    .attach(StatusCode::INTERNAL_SERVER_ERROR)
+                    .attach(err.to_string())
+                    .log_it()
+            })?;
         Ok(guard)
     }
 }
 
+#[mry::mry]
 impl UserManagerRepository {
     pub fn add_user(
         &self,
@@ -227,6 +238,15 @@ impl UserManagerRepository {
             .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
 
         Ok(row)
+    }
+}
+
+#[cfg(test)]
+impl UserManagerRepository {
+    pub fn new_mock() -> Self {
+        mry::new!(Self {
+            sqlite_client: None
+        })
     }
 }
 

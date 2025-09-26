@@ -65,3 +65,95 @@ impl FromContext for EditUserService {
         Ok(Self::new(ctx.inject().await?))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod test_edit_user_submit {
+        use super::*;
+        use crate::user::form::edit_user::EditUserValidated;
+        use crate::user::repository::user_manager_repository::UserManagerRepositoryError;
+
+        #[test]
+        fn test_submit_success() {
+            let edit_user_validated = EditUserValidated::new_test_data();
+            let mut user_manager_repository = UserManagerRepository::new_mock();
+            user_manager_repository
+                .mock_edit_user(
+                    1,
+                    edit_user_validated.username.as_str().to_string(),
+                    edit_user_validated.role.clone(),
+                )
+                .returns_once(Ok(()));
+
+            let service = EditUserService::new(user_manager_repository);
+            let result = service.edit_user_submit(1, &edit_user_validated);
+            assert!(result.is_ok());
+        }
+
+        #[test]
+        fn test_submit_fail() {
+            let edit_user_validated = EditUserValidated::new_test_data();
+            let mut user_manager_repository = UserManagerRepository::new_mock();
+            user_manager_repository
+                .mock_edit_user(
+                    1,
+                    edit_user_validated.username.as_str().to_string(),
+                    edit_user_validated.role.clone(),
+                )
+                .returns_once(Err(Report::new(UserManagerRepositoryError::QueryError)));
+
+            let service = EditUserService::new(user_manager_repository);
+            let result = service.edit_user_submit(1, &edit_user_validated);
+            assert!(result.is_err());
+        }
+    }
+
+    mod test_fetch_user {
+        use super::*;
+        use crate::user::repository::user_manager_repository::UserManagerRepositoryError;
+
+        #[test]
+        fn test_fetch_user_success() {
+            let mut user_manager_repository = UserManagerRepository::new_mock();
+            user_manager_repository
+                .mock_fetch_user(1)
+                .returns_once(Ok(Some(FetchUser {
+                    username: "username".to_string(),
+                    role: Default::default(),
+                })));
+
+            let service = EditUserService::new(user_manager_repository);
+            let result = service.fetch_user(1);
+            assert!(result.is_ok());
+        }
+
+        #[test]
+        fn test_fetch_user_not_found() {
+            let mut user_manager_repository = UserManagerRepository::new_mock();
+            user_manager_repository
+                .mock_fetch_user(1)
+                .returns_once(Ok(None));
+
+            let service = EditUserService::new(user_manager_repository);
+            let result = service.fetch_user(1);
+            assert!(result.is_err());
+            let result = result.err().unwrap();
+            let status_code = result.downcast_ref::<StatusCode>().unwrap();
+            assert_eq!(*status_code, StatusCode::NOT_FOUND);
+        }
+
+        #[test]
+        fn test_fetch_user_error() {
+            let mut user_manager_repository = UserManagerRepository::new_mock();
+            user_manager_repository
+                .mock_fetch_user(1)
+                .returns_once(Err(Report::new(UserManagerRepositoryError::QueryError)));
+
+            let service = EditUserService::new(user_manager_repository);
+            let result = service.fetch_user(1);
+            assert!(result.is_err());
+        }
+    }
+}

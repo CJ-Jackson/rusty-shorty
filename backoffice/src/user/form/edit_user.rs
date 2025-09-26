@@ -96,6 +96,16 @@ pub struct EditUserValidated {
     pub role: Role,
 }
 
+#[cfg(test)]
+impl EditUserValidated {
+    pub fn new_test_data() -> Self {
+        Self {
+            username: Username::parse(Some("username")).unwrap(),
+            role: Default::default(),
+        }
+    }
+}
+
 pub struct EditUserError {
     pub username: Result<Username, UsernameError>,
     #[allow(dead_code)]
