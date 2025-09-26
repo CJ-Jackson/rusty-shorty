@@ -57,3 +57,10 @@ impl StackFetchLocale {
         }
     }
 }
+
+pub fn stack_clear_confirm_message(l: &Locale) -> String {
+    l.text_with_default(
+        "stack-route-logout-confirm-message",
+        "Are you sure you want to clear all error stacks older than 30 days?",
+    )
+}

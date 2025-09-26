@@ -1,0 +1,11 @@
+function messageConfirm() {
+    let elements = document.getElementsByClassName("js-message-confirm");
+    for (let element of elements) {
+        element.onclick = function (e) {
+            let msg = this.getAttribute("data-msg");
+            return confirm(msg);
+        }
+    }
+}
+
+messageConfirm();

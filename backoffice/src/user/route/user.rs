@@ -4,7 +4,7 @@ use crate::common::icon::{flag_icon, key_icon, pencil_square_icon, plus_icon};
 use crate::user::form::add_user::AddUserForm;
 use crate::user::form::edit_password_manager::EditPasswordManagerForm;
 use crate::user::form::edit_user::EditUserForm;
-use crate::user::locale::user::UserLocale;
+use crate::user::locale::user::{UserLocale, user_logout_confirm_message};
 use crate::user::pointer::user_pointer::UserPointer;
 use crate::user::repository::user_manager_repository::UserManagerRepository;
 use crate::user::role::Role;
@@ -70,7 +70,7 @@ async fn list_users(
                                     " "
                                     a .icon href=( format!("{}/edit-password/{}", USER_ROUTE, user.id)) title=(&user_locale.user_list_action_password) { (password_icon) }
                                     " "
-                                    a .icon .js-logout-confirm data-username=(&user.username)
+                                    a .icon .js-message-confirm data-msg=(user_logout_confirm_message(&context_html_builder.locale, &user.username))
                                         href=( format!("{}/sign-out/{}", USER_ROUTE, user.id)) title=(&user_locale.user_list_action_sign_out) { (flag_icon) }
                                 }
                             }
@@ -90,9 +90,9 @@ async fn list_users(
 
 fn user_logout_confirm_js() -> Markup {
     let js = if cfg!(debug_assertions) {
-        Asset::get("js/user_logout_confirm.js").as_string()
+        Asset::get("js/confirm_message.js").as_string()
     } else {
-        Asset::get("js/user_logout_confirm.min.js").as_string()
+        Asset::get("js/confirm_message.min.js").as_string()
     };
     html! {
         script type="module"{

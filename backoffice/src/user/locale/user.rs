@@ -1,4 +1,4 @@
-use poem::i18n::Locale;
+use poem::i18n::{I18NArgs, Locale};
 use shared::locale::LocaleExt;
 
 pub struct UserLocale {
@@ -29,4 +29,12 @@ impl UserLocale {
                 .text_with_default("user-route-list-action-add-user", "Add Users"),
         }
     }
+}
+
+pub fn user_logout_confirm_message(l: &Locale, username: &str) -> String {
+    l.text_with_default_args(
+        "user-route-logout-confirm-message",
+        format!("Are you sure you want to log out '{username}'?").as_str(),
+        I18NArgs::from((("username", username),)),
+    )
 }

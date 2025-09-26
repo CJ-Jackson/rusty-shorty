@@ -14,3 +14,5 @@ stack-list-error-stack-fetch-title = Error Stack: { $name }
 stack-list-error-stack-fetch-head-reported = Reported At
 stack-list-error-stack-fetch-head-summary = Summary
 stack-list-error-stack-fetch-head-stack = Stack
+
+stack-route-logout-confirm-message = Are you sure you want to clear all error stacks older than 30 days?

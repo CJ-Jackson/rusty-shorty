@@ -1,7 +1,9 @@
 use crate::common::embed::Asset;
 use crate::common::html::context_html::ContextHtmlBuilder;
 use crate::common::icon::{document_magnifying_glass_icon, no_symbol_icon};
-use crate::stack::route::locale::stack_locale::{StackFetchLocale, StackLocale};
+use crate::stack::route::locale::stack_locale::{
+    StackFetchLocale, StackLocale, stack_clear_confirm_message,
+};
 use crate::stack::service::stack_service::StackService;
 use maud::{Markup, PreEscaped, html};
 use poem::session::Session;
@@ -55,7 +57,7 @@ fn list_error_stack(
                 }
             }
             div .text-right .mt-3 {
-                a .inline-block .js-clear-confirm href=(format!("{}/clear", STACK_ROUTE))
+                a .inline-block .js-message-confirm data-msg=(stack_clear_confirm_message(&context_html_builder.locale)) href=(format!("{}/clear", STACK_ROUTE))
                 title=(lc.action_clear) { (clear_icon) }
             }
         })
@@ -70,9 +72,9 @@ fn list_error_stack_asset() -> Markup {
         Asset::get("js/format_to_local_time.min.js").as_string()
     };
     let js_stack_clear_confirm = if cfg!(debug_assertions) {
-        Asset::get("js/stack_clear_confirm.js").as_string()
+        Asset::get("js/confirm_message.js").as_string()
     } else {
-        Asset::get("js/stack_clear_confirm.min.js").as_string()
+        Asset::get("js/confirm_message.min.js").as_string()
     };
     html! {
         script type="module"{

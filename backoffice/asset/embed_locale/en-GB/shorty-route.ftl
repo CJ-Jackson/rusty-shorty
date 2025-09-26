@@ -14,3 +14,5 @@ shorty-route-action-add = Add Url
 shorty-route-flash-success-edit-url = Successfully edited URL
 shorty-route-flash-success-add-url = Successfully added URL
 shorty-route-flash-success-deleted-url = Successfully deleted URL
+
+shorty-route-confirm-message = Are you sure you want to delete '{ $id }'?
