@@ -161,4 +161,34 @@ mod tests {
         let str = service.validate_login("hello".to_string(), "password".to_string());
         assert!(str.is_none());
     }
+
+    #[test]
+    fn test_logout_success() {
+        let mut user_repository = UserRepository::new_mock();
+        let password_layer = PasswordLayer::new_mock();
+
+        user_repository
+            .mock_delete_token("hello".to_string())
+            .returns_once(Ok(()));
+
+        let service =
+            UserLoginService::new(user_repository, password_layer, Some("hello".to_string()));
+        let result = service.logout();
+        assert_eq!(result, true);
+    }
+
+    #[test]
+    fn test_logout_fail() {
+        let mut user_repository = UserRepository::new_mock();
+        let password_layer = PasswordLayer::new_mock();
+
+        user_repository
+            .mock_delete_token("hello".to_string())
+            .returns_once(Err(Report::new(UserRepositoryError::QueryError)));
+
+        let service =
+            UserLoginService::new(user_repository, password_layer, Some("hello".to_string()));
+        let result = service.logout();
+        assert_eq!(result, false);
+    }
 }

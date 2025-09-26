@@ -51,3 +51,39 @@ impl FromContext for UserCheckService {
         ))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::user::repository::user_repository::UserRepositoryError;
+
+    #[test]
+    fn test_get_user_context_user() {
+        let mut user_repository = UserRepository::new_mock();
+
+        user_repository
+            .mock_find_by_token("hello".to_string())
+            .returns_once(Ok(UserIdContext {
+                id: 5,
+                username: "".to_string(),
+                role: Default::default(),
+            }));
+
+        let service = UserCheckService::new(user_repository, Some("hello".to_string()));
+        let result = service.get_user_context();
+        assert_eq!(result.id, 5);
+    }
+
+    #[test]
+    fn test_get_user_context_visitor() {
+        let mut user_repository = UserRepository::new_mock();
+
+        user_repository
+            .mock_find_by_token("hello".to_string())
+            .returns_once(Err(Report::new(UserRepositoryError::QueryError)));
+
+        let service = UserCheckService::new(user_repository, Some("hello".to_string()));
+        let result = service.get_user_context();
+        assert_eq!(result.id, 0);
+    }
+}
