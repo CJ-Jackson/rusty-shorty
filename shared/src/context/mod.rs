@@ -28,9 +28,21 @@ impl Context<'_> {
         T::from_context(self).await
     }
 
+    pub async fn inject_poem<T: FromContext>(&self) -> poem::Result<T> {
+        self.inject::<T>()
+            .await
+            .map_err(poem::Error::from_error_stack)
+    }
+
     pub fn req_result(&self) -> Result<&Request, Report<ContextError>> {
         self.req
             .ok_or_else(|| Report::new(ContextError::RequestError))
+    }
+}
+
+impl<'a> FromRequest<'a> for Context<'a> {
+    async fn from_request(req: &'a Request, _body: &mut RequestBody) -> poem::Result<Self> {
+        Ok(Self { req: Some(req) })
     }
 }
 
