@@ -51,8 +51,8 @@ pub async fn boot() -> Result<(), Report<MainError>> {
         .with(CookieJarManager::new())
         .with(CookieSession::new(CookieConfig::new()))
         .with(Csrf::new())
-        .with(CatchPanic::new())
-        .catch_all_error(catch_all_error);
+        .catch_all_error(catch_all_error)
+        .with(CatchPanic::new());
 
     match config.upgrade() {
         Some(config) => {

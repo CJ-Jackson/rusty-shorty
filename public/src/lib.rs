@@ -16,8 +16,8 @@ pub async fn boot() -> Result<(), Report<MainError>> {
     let route = shorty_route();
 
     let route = route
-        .with(CatchPanic::new())
-        .catch_all_error(catch_all_error);
+        .catch_all_error(catch_all_error)
+        .with(CatchPanic::new());
 
     match config.upgrade() {
         Some(config) => {
