@@ -1,6 +1,6 @@
-use crate::common::embed::Asset;
 use crate::common::html::context_html::ContextHtmlBuilder;
 use crate::common::icon::{flag_icon, key_icon, pencil_square_icon, plus_icon};
+use crate::common::js::{confirm_message, js_vec_wrap};
 use crate::user::form::add_user::AddUserForm;
 use crate::user::form::edit_password_manager::EditPasswordManagerForm;
 use crate::user::form::edit_user::EditUserForm;
@@ -13,7 +13,7 @@ use crate::user::service::user_manager_service::add_user_service::AddUserService
 use crate::user::service::user_manager_service::edit_password_service::EditPasswordService;
 use crate::user::service::user_manager_service::edit_service::EditUserService;
 use crate::user::service::user_manager_service::list_service::ListUserService;
-use maud::{Markup, PreEscaped, html};
+use maud::{Markup, html};
 use poem::http::StatusCode;
 use poem::i18n::{I18NArgs, Locale};
 use poem::session::Session;
@@ -21,7 +21,6 @@ use poem::web::{CsrfToken, CsrfVerifier, Path, Redirect};
 use poem::{Error, IntoResponse, Route, get, handler};
 use shared::context::Dep;
 use shared::csrf::{CsrfTokenHtml, CsrfVerifierError};
-use shared::embed::EmbedAsString;
 use shared::error::{ExtraResultExt, FromErrorStack};
 use shared::flash::{Flash, FlashMessage};
 use shared::locale::LocaleExt;
@@ -84,21 +83,8 @@ async fn list_users(
                 }
             }
         })
-        .attach_footer(user_logout_confirm_js())
+        .attach_footer(js_vec_wrap(vec![confirm_message()]))
         .build()
-}
-
-fn user_logout_confirm_js() -> Markup {
-    let js = if cfg!(debug_assertions) {
-        Asset::get("js/confirm_message.js").as_string()
-    } else {
-        Asset::get("js/confirm_message.min.js").as_string()
-    };
-    html! {
-        script type="module"{
-            (PreEscaped(js))
-        }
-    }
 }
 
 enum PostResponse {

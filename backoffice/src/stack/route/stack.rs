@@ -1,16 +1,15 @@
-use crate::common::embed::Asset;
 use crate::common::html::context_html::ContextHtmlBuilder;
 use crate::common::icon::{document_magnifying_glass_icon, no_symbol_icon};
+use crate::common::js::{confirm_message, format_to_local_time, js_vec_wrap};
 use crate::stack::route::locale::stack_locale::{
     StackFetchLocale, StackLocale, stack_clear_confirm_message,
 };
 use crate::stack::service::stack_service::StackService;
-use maud::{Markup, PreEscaped, html};
+use maud::{Markup, html};
 use poem::session::Session;
 use poem::web::{Path, Redirect};
 use poem::{Route, get, handler};
 use shared::context::Dep;
-use shared::embed::EmbedAsString;
 use shared::error::FromErrorStack;
 use shared::flash::{Flash, FlashMessage};
 
@@ -61,26 +60,8 @@ fn list_error_stack(
                 title=(lc.action_clear) { (clear_icon) }
             }
         })
-        .attach_footer(list_error_stack_asset())
+        .attach_footer(js_vec_wrap(vec![format_to_local_time(), confirm_message()]))
         .build()
-}
-
-fn list_error_stack_asset() -> Markup {
-    let js_format_to_local_time = if cfg!(debug_assertions) {
-        Asset::get("js/format_to_local_time.js").as_string()
-    } else {
-        Asset::get("js/format_to_local_time.min.js").as_string()
-    };
-    let js_stack_clear_confirm = if cfg!(debug_assertions) {
-        Asset::get("js/confirm_message.js").as_string()
-    } else {
-        Asset::get("js/confirm_message.min.js").as_string()
-    };
-    html! {
-        script type="module"{
-            (PreEscaped(format!("{}\n{}", js_format_to_local_time, js_stack_clear_confirm)))
-        }
-    }
 }
 
 #[handler]
@@ -107,21 +88,8 @@ fn fetch_error_stack_detail(
             h2 { (lc.head_stack) }
             pre .pre { (item.error_stack) }
         })
-        .attach_footer(fetch_error_stack_detail_asset())
+        .attach_footer(js_vec_wrap(vec![format_to_local_time()]))
         .build())
-}
-
-fn fetch_error_stack_detail_asset() -> Markup {
-    let js_format_to_local_time = if cfg!(debug_assertions) {
-        Asset::get("js/format_to_local_time.js").as_string()
-    } else {
-        Asset::get("js/format_to_local_time.min.js").as_string()
-    };
-    html! {
-        script type="module"{
-            (PreEscaped(js_format_to_local_time))
-        }
-    }
 }
 
 #[handler]

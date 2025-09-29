@@ -1,6 +1,6 @@
-use crate::common::embed::Asset;
 use crate::common::html::context_html::ContextHtmlBuilder;
 use crate::common::icon::{pencil_square_icon, plus_icon, trash_icon};
+use crate::common::js::{confirm_message, format_to_local_time, js_vec_wrap};
 use crate::shorty::form::add_edit_url_form::AddEditUrlForm;
 use crate::shorty::route::locale::shorty::{ShortyRouteLocale, short_route_confirm_message};
 use crate::shorty::service::add_url_service::AddUrlService;
@@ -10,7 +10,7 @@ use crate::shorty::service::list_url_service::ListUrlService;
 use crate::user::pointer::user_pointer::UserPointer;
 use crate::user::role::Role;
 use crate::user::role::user_role_check::must_be_user;
-use maud::{Markup, PreEscaped, html};
+use maud::{Markup, html};
 use poem::http::StatusCode;
 use poem::i18n::Locale;
 use poem::session::Session;
@@ -18,7 +18,6 @@ use poem::web::{CsrfToken, CsrfVerifier, Path, Redirect};
 use poem::{Error, IntoResponse, Route, get, handler};
 use shared::context::Dep;
 use shared::csrf::{CsrfTokenHtml, CsrfVerifierError};
-use shared::embed::EmbedAsString;
 use shared::error::{ExtraResultExt, FromErrorStack};
 use shared::flash::{Flash, FlashMessage};
 use shared::locale::LocaleExt;
@@ -78,26 +77,8 @@ async fn list_urls(
             div .text-right .mt-3 {
                 a .inline-block href=( format!("{}/add", SHORTY_ROUTE)) title=(lc.action_add) { (add_icon) }
             }
-        }).attach_footer(list_url_js_asset())
+        }).attach_footer(js_vec_wrap(vec![format_to_local_time(), confirm_message()]))
         .build()
-}
-
-fn list_url_js_asset() -> Markup {
-    let js_format_to_local_time = if cfg!(debug_assertions) {
-        Asset::get("js/format_to_local_time.js").as_string()
-    } else {
-        Asset::get("js/format_to_local_time.min.js").as_string()
-    };
-    let js_delete_confirm = if cfg!(debug_assertions) {
-        Asset::get("js/confirm_message.js").as_string()
-    } else {
-        Asset::get("js/confirm_message.min.js").as_string()
-    };
-    html! {
-        script type="module"{
-            (PreEscaped(format!("{}\n{}", js_format_to_local_time, js_delete_confirm)))
-        }
-    }
 }
 
 enum PostResponse {
