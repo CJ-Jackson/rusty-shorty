@@ -6,7 +6,6 @@ use poem::http::StatusCode;
 use rusqlite::{Connection, OptionalExtension, named_params};
 use shared::context::{Context, ContextError, FromContext};
 use shared::db::{BorrowConnectionExt, SqliteClient};
-use shared::error::LogItExt;
 use std::sync::{Arc, MutexGuard};
 use thiserror::Error;
 
