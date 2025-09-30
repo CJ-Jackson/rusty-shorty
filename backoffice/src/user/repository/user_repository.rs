@@ -4,8 +4,7 @@ use error_stack::{Report, ResultExt};
 use poem::http::StatusCode;
 use rusqlite::{Connection, OptionalExtension, named_params};
 use shared::context::{Context, ContextError, FromContext};
-use shared::db::SqliteClient;
-use shared::error::LogItExt;
+use shared::db::{BorrowConnectionExt, SqliteClient};
 use std::sync::MutexGuard;
 use thiserror::Error;
 
@@ -15,8 +14,8 @@ pub enum UserRepositoryError {
     QueryError,
     #[error("Row Value error")]
     RowValueError,
-    #[error("Lock error")]
-    LockError,
+    #[error("Borrow Conn error")]
+    BorrowConnError,
     #[error("Not found error")]
     NotFoundError,
 }
@@ -35,19 +34,9 @@ impl UserRepository {
     }
 
     fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<UserRepositoryError>> {
-        let guard = self
-            .sqlite_client
-            .as_ref()
-            .expect("Client")
-            .get_conn()
-            .lock()
-            .map_err(|err| {
-                Report::new(UserRepositoryError::LockError)
-                    .attach(StatusCode::INTERNAL_SERVER_ERROR)
-                    .attach(err.to_string())
-                    .log_it()
-            })?;
-        Ok(guard)
+        self.sqlite_client
+            .borrow_conn()
+            .change_context(UserRepositoryError::BorrowConnError)
     }
 }
 

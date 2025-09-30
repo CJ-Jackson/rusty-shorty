@@ -1,11 +1,12 @@
 use crate::config::ConfigPointer;
 use crate::context::{Context, ContextError, FromContext};
-use crate::error::{ExtraResultExt, FromIntoStackError};
+use crate::error::{ExtraResultExt, FromIntoStackError, LogItExt};
 use crate::password::Password;
 use error_stack::{Report, ResultExt};
+use poem::http::StatusCode;
 use rusqlite::{Connection, named_params};
 use std::marker::PhantomData;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 use thiserror::Error;
 use tokio::sync::OnceCell;
 
@@ -23,6 +24,10 @@ pub enum SqliteClientError {
     Connection,
     #[error("Init failed")]
     InitFailed,
+    #[error("Option Empty error")]
+    OptionEmpty,
+    #[error("Lock error")]
+    LockError,
 }
 
 impl FromIntoStackError for SqliteClientError {}
@@ -90,5 +95,33 @@ impl FromContext for SqliteClient {
             })
             .await;
         Ok(sqlite_client?.clone())
+    }
+}
+
+pub trait BorrowConnectionExt {
+    fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<SqliteClientError>>;
+}
+
+impl BorrowConnectionExt for SqliteClient {
+    fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<SqliteClientError>> {
+        let guard = self.0.lock().map_err(|err| {
+            Report::new(SqliteClientError::LockError)
+                .attach(err.to_string())
+                .attach(StatusCode::INTERNAL_SERVER_ERROR)
+                .log_it()
+        })?;
+        Ok(guard)
+    }
+}
+
+impl BorrowConnectionExt for Option<SqliteClient> {
+    fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<SqliteClientError>> {
+        self.as_ref()
+            .ok_or_else(|| {
+                Report::new(SqliteClientError::OptionEmpty)
+                    .attach(StatusCode::INTERNAL_SERVER_ERROR)
+                    .log_it()
+            })?
+            .borrow_conn()
     }
 }

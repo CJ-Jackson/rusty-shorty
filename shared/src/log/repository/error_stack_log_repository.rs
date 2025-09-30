@@ -1,5 +1,5 @@
 use crate::context::{Context, ContextError, FromContext};
-use crate::db::SqliteClient;
+use crate::db::{BorrowConnectionExt, SqliteClient};
 use error_stack::{Report, ResultExt};
 use rusqlite::{Connection, named_params};
 use std::sync::MutexGuard;
@@ -9,8 +9,8 @@ use thiserror::Error;
 pub enum ErrorStackLogRepositoryError {
     #[error("Query error")]
     QueryError,
-    #[error("Lock error")]
-    LockError,
+    #[error("Borrow Conn error")]
+    BorrowConnError,
 }
 
 #[mry::mry]
@@ -29,16 +29,9 @@ impl ErrorStackLogRepository {
     fn borrow_conn(
         &'_ self,
     ) -> Result<MutexGuard<'_, Connection>, Report<ErrorStackLogRepositoryError>> {
-        let guard = self
-            .sqlite_client
-            .as_ref()
-            .expect("Client")
-            .get_conn()
-            .lock()
-            .map_err(|err| {
-                Report::new(ErrorStackLogRepositoryError::LockError).attach(err.to_string())
-            })?;
-        Ok(guard)
+        self.sqlite_client
+            .borrow_conn()
+            .change_context(ErrorStackLogRepositoryError::BorrowConnError)
     }
 }
 

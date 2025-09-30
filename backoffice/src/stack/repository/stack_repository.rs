@@ -3,8 +3,7 @@ use error_stack::{Report, ResultExt};
 use poem::http::StatusCode;
 use rusqlite::{Connection, OptionalExtension, named_params};
 use shared::context::{Context, ContextError, FromContext};
-use shared::db::SqliteClient;
-use shared::error::LogItExt;
+use shared::db::{BorrowConnectionExt, SqliteClient};
 use std::sync::{Arc, MutexGuard};
 use thiserror::Error;
 
@@ -14,8 +13,8 @@ pub enum StackRepositoryError {
     QueryError,
     #[error("Row Value Error")]
     RowValueError,
-    #[error("Lock Error")]
-    LockError,
+    #[error("Borrow Conn Error")]
+    BorrowConnError,
 }
 
 #[mry::mry]
@@ -32,19 +31,9 @@ impl StackRepository {
     }
 
     fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<StackRepositoryError>> {
-        let guard = self
-            .sqlite_client
-            .as_ref()
-            .expect("Client")
-            .get_conn()
-            .lock()
-            .map_err(|err| {
-                Report::new(StackRepositoryError::LockError)
-                    .attach(StatusCode::INTERNAL_SERVER_ERROR)
-                    .attach(err.to_string())
-                    .log_it()
-            })?;
-        Ok(guard)
+        self.sqlite_client
+            .borrow_conn()
+            .change_context(StackRepositoryError::BorrowConnError)
     }
 }
 

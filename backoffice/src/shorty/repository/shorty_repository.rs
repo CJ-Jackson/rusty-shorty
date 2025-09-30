@@ -5,7 +5,7 @@ use error_stack::{Report, ResultExt};
 use poem::http::StatusCode;
 use rusqlite::{Connection, OptionalExtension, named_params};
 use shared::context::{Context, ContextError, FromContext};
-use shared::db::SqliteClient;
+use shared::db::{BorrowConnectionExt, SqliteClient};
 use shared::error::LogItExt;
 use std::sync::{Arc, MutexGuard};
 use thiserror::Error;
@@ -16,8 +16,8 @@ pub enum ShortyRepositoryError {
     QueryError,
     #[error("Row Value error")]
     RowValueError,
-    #[error("Lock error")]
-    LockError,
+    #[error("Borrow Conn error")]
+    BorrowConnError,
 }
 
 #[mry::mry]
@@ -34,19 +34,9 @@ impl ShortyRepository {
     }
 
     fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<ShortyRepositoryError>> {
-        let guard = self
-            .sqlite_client
-            .as_ref()
-            .expect("Client")
-            .get_conn()
-            .lock()
-            .map_err(|err| {
-                Report::new(ShortyRepositoryError::LockError)
-                    .attach(StatusCode::INTERNAL_SERVER_ERROR)
-                    .attach(err.to_string())
-                    .log_it()
-            })?;
-        Ok(guard)
+        self.sqlite_client
+            .borrow_conn()
+            .change_context(ShortyRepositoryError::BorrowConnError)
     }
 }
 
