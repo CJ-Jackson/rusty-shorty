@@ -24,10 +24,10 @@ pub enum SqliteClientError {
     Connection,
     #[error("Init failed")]
     InitFailed,
-    #[error("Option Empty error")]
+    #[error("Connection Option Empty error")]
     OptionEmpty,
-    #[error("Lock error")]
-    LockError,
+    #[error("Lock error: {0}")]
+    LockError(String),
 }
 
 impl FromIntoStackError for SqliteClientError {}
@@ -105,8 +105,7 @@ pub trait BorrowConnectionExt {
 impl BorrowConnectionExt for SqliteClient {
     fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<SqliteClientError>> {
         let guard = self.0.lock().map_err(|err| {
-            Report::new(SqliteClientError::LockError)
-                .attach(err.to_string())
+            Report::new(SqliteClientError::LockError(err.to_string()))
                 .attach(StatusCode::INTERNAL_SERVER_ERROR)
                 .log_it()
         })?;
