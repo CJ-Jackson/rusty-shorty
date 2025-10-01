@@ -24,8 +24,6 @@ pub fn js_format_to_local_time() -> String {
 
 pub fn js_vec_wrap(vec: Vec<String>) -> Markup {
     html! {
-        script type="module"{
-            (PreEscaped(vec.join("\n")))
-        }
+        script type="module" { (PreEscaped(vec.join("\n"))) }
     }
 }
