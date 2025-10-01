@@ -102,7 +102,7 @@ pub trait BorrowConnectionExt {
     fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<SqliteClientError>>;
 }
 
-impl BorrowConnectionExt for SqliteClient {
+impl<T: ConnectionMarker> BorrowConnectionExt for SqliteClient<T> {
     fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<SqliteClientError>> {
         let guard = self.0.lock().map_err(|err| {
             Report::new(SqliteClientError::LockError(err.to_string()))
@@ -113,7 +113,7 @@ impl BorrowConnectionExt for SqliteClient {
     }
 }
 
-impl BorrowConnectionExt for Option<SqliteClient> {
+impl<T: ConnectionMarker> BorrowConnectionExt for Option<SqliteClient<T>> {
     fn borrow_conn(&'_ self) -> Result<MutexGuard<'_, Connection>, Report<SqliteClientError>> {
         self.as_ref()
             .ok_or_else(|| {
