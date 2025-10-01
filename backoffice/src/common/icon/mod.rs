@@ -2,6 +2,7 @@ use crate::common::embed::AssetHidden;
 use maud::{Markup, PreEscaped};
 use shared::embed::EmbedAsString;
 
+#[inline]
 fn get_icon(name: &str) -> Markup {
     PreEscaped(AssetHidden::get(name).as_string())
 }
