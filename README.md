@@ -34,3 +34,12 @@ port = 8001
 [default.sqlite]
 path = "./sqlite.db"
 ```
+
+## Default Credentials
+
+```
+username: admin
+password: banana
+```
+
+That can be changed in the backoffice.
