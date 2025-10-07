@@ -5,6 +5,7 @@ pub mod validate;
 use crate::common::embed::AssetHidden;
 use maud::{DOCTYPE, Markup, PreEscaped, html};
 use shared::embed::EmbedAsString;
+use crate::common::js::{js_main, js_vec_wrap};
 
 fn html_import_map() -> Markup {
     let map = if cfg!(debug_assertions) {
@@ -40,6 +41,7 @@ fn html_doc(title: &str, content: Markup, head: Markup, footer: Markup) -> Marku
             body {
                 (content)
                 (footer)
+                (js_vec_wrap(vec![js_main()]))
             }
         }
     }

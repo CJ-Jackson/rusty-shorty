@@ -11,15 +11,8 @@ fn js_debug_prod(debug: &str, prod: &str) -> String {
     }
 }
 
-pub fn js_confirm_message() -> String {
-    js_debug_prod("js/confirm_message.js", "js/confirm_message.min.js")
-}
-
-pub fn js_format_to_local_time() -> String {
-    js_debug_prod(
-        "js/format_to_local_time.js",
-        "js/format_to_local_time.min.js",
-    )
+pub fn js_main() -> String {
+    js_debug_prod("js/main.js", "js/main.min.js")
 }
 
 pub fn js_vec_wrap(vec: Vec<String>) -> Markup {

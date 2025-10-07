@@ -8,7 +8,7 @@ top_path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(top_path + "/asset/js")
 
 downloads = [
-    "https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.18/vue.esm-browser.js"
+    "https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.7/htmx.esm.js"
 ]
 
 for url in downloads:

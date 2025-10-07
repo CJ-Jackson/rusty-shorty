@@ -1,6 +1,5 @@
 use crate::common::html::context_html::ContextHtmlBuilder;
 use crate::common::icon::{pencil_square_icon, plus_icon, trash_icon};
-use crate::common::js::{js_confirm_message, js_format_to_local_time, js_vec_wrap};
 use crate::shorty::form::add_edit_url_form::AddEditUrlForm;
 use crate::shorty::route::locale::shorty::{ShortyRouteLocale, short_route_confirm_message};
 use crate::shorty::service::add_url_service::AddUrlService;
@@ -77,7 +76,7 @@ async fn list_urls(
             div .text-right .mt-3 {
                 a .inline-block href=( format!("{}/add", SHORTY_ROUTE)) title=(lc.action_add) { (add_icon) }
             }
-        }).attach_footer(js_vec_wrap(vec![js_format_to_local_time(), js_confirm_message()]))
+        })
         .build()
 }
 

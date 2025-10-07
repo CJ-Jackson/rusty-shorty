@@ -1,9 +1,0 @@
-function fetchCsrfToken() {
-    return fetch("/csrf/token").then(function (res) {
-        return res.json();
-    }).then(function (res) {
-        return res['token'];
-    })
-}
-
-export {fetchCsrfToken};

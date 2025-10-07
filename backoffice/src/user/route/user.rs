@@ -1,6 +1,5 @@
 use crate::common::html::context_html::ContextHtmlBuilder;
 use crate::common::icon::{flag_icon, key_icon, pencil_square_icon, plus_icon};
-use crate::common::js::{js_confirm_message, js_vec_wrap};
 use crate::user::form::add_user::AddUserForm;
 use crate::user::form::edit_password_manager::EditPasswordManagerForm;
 use crate::user::form::edit_user::EditUserForm;
@@ -83,7 +82,6 @@ async fn list_users(
                 }
             }
         })
-        .attach_footer(js_vec_wrap(vec![js_confirm_message()]))
         .build()
 }
 

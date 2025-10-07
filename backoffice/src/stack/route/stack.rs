@@ -1,6 +1,5 @@
 use crate::common::html::context_html::ContextHtmlBuilder;
 use crate::common::icon::{document_magnifying_glass_icon, no_symbol_icon};
-use crate::common::js::{js_confirm_message, js_format_to_local_time, js_vec_wrap};
 use crate::stack::route::locale::stack_locale::{
     StackFetchLocale, StackLocale, stack_clear_confirm_message,
 };
@@ -60,7 +59,6 @@ fn list_error_stack(
                 title=(lc.action_clear) { (clear_icon) }
             }
         })
-        .attach_footer(js_vec_wrap(vec![js_format_to_local_time(), js_confirm_message()]))
         .build()
 }
 
@@ -88,7 +86,6 @@ fn fetch_error_stack_detail(
             h2 { (lc.head_stack) }
             pre .pre { (item.error_stack) }
         })
-        .attach_footer(js_vec_wrap(vec![js_format_to_local_time()]))
         .build())
 }
 
