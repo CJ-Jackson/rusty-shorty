@@ -58,7 +58,7 @@ impl ShortyRepository {
             },
         )
         .change_context(ShortyRepositoryError::QueryError)
-        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+        .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         Ok(())
     }
@@ -73,7 +73,7 @@ impl ShortyRepository {
             },
         )
         .change_context(ShortyRepositoryError::QueryError)
-        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+        .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         Ok(())
     }
@@ -95,7 +95,7 @@ impl ShortyRepository {
             },
         )
         .change_context(ShortyRepositoryError::QueryError)
-        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+        .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         Ok(())
     }
@@ -125,7 +125,7 @@ impl ShortyRepository {
             )
             .optional()
             .change_context(ShortyRepositoryError::RowValueError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         Ok(item)
     }
@@ -156,7 +156,7 @@ impl ShortyRepository {
             )
             .optional()
             .change_context(ShortyRepositoryError::RowValueError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         Ok(item)
     }
@@ -183,12 +183,12 @@ impl ShortyRepository {
                 })
             })
             .change_context(ShortyRepositoryError::QueryError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         let items = items_iter
             .collect::<Result<Vec<_>, _>>()
             .change_context(ShortyRepositoryError::RowValueError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         Ok(items.into())
     }

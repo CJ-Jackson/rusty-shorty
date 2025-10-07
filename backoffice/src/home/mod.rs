@@ -17,7 +17,7 @@ pub async fn home_page(Dep(context_html_builder): Dep<ContextHtmlBuilder>) -> Ma
         .unwrap_or("Check out the navigation above".to_string());
     context_html_builder
         .attach_title(&title)
-        .set_current_tag("home")
+        .set_current_tag("id-tag-home")
         .attach_content(html! {
             h1 .mt-3 { (title) }
             p { (paragraph) }

@@ -78,7 +78,7 @@ impl StackRepository {
             )
             .optional()
             .change_context(StackRepositoryError::QueryError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         Ok(row)
     }
@@ -101,12 +101,12 @@ impl StackRepository {
                 })
             })
             .change_context(StackRepositoryError::QueryError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         let items = rows_iter
             .collect::<Result<Vec<_>, _>>()
             .change_context(StackRepositoryError::RowValueError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         Ok(items.into())
     }

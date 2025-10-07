@@ -39,7 +39,7 @@ async fn list_urls(
 
     context_html_builder
         .attach_title(&lc.title)
-        .set_current_tag("shorty")
+        .set_current_tag("id-tag-shorty")
         .attach_content(html! {
             h1 { (lc.title) }
             table .table-full {

@@ -1,10 +1,10 @@
 import htmx from 'htmx'
 
 htmx.config.responseHandling = [
-    { code: '204', swap: false },
-    { code: '[23]..', swap: true },
-    { code: '422', swap: true },
-    { code: '[45]..', swap: false, error: true }
+    {code: '204', swap: false},
+    {code: '[23]..', swap: true},
+    {code: '422', swap: true},
+    {code: '[45]..', swap: false, error: true}
 ];
 
 function formatToLocalTime() {
@@ -19,6 +19,8 @@ function formatToLocalTime() {
     }
 }
 
+formatToLocalTime();
+
 function messageConfirm() {
     let elements = document.getElementsByClassName("js-message-confirm");
     for (let element of elements) {
@@ -30,7 +32,28 @@ function messageConfirm() {
     }
 }
 
+async function clearNavActive() {
+    let element = document.getElementById("tag-update");
+    if (element) {
+        let elements = document.getElementsByClassName("nav-item");
+        for (let element of elements) {
+            element.classList.remove("nav-item-active");
+        }
+    }
+}
+
+function addNavActive() {
+    let element = document.getElementById("tag-update");
+    if (element) {
+        let tagElement = document.getElementById(element.dataset.tag);
+        tagElement.classList.add("nav-item-active");
+    }
+}
+
 htmx.onLoad(function () {
     formatToLocalTime();
     messageConfirm();
+    clearNavActive().then(function () {
+        addNavActive();
+    });
 });

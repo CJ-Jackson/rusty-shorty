@@ -7,6 +7,7 @@ pub mod db;
 pub mod embed;
 pub mod error;
 pub mod flash;
+pub mod htmx;
 pub mod locale;
 pub mod log;
 pub mod password;

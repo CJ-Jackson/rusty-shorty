@@ -59,7 +59,7 @@ impl UserManagerRepository {
             },
         )
         .change_context(UserManagerRepositoryError::QueryError)
-        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+        .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
         Ok(())
     }
 
@@ -78,7 +78,7 @@ impl UserManagerRepository {
             },
         )
         .change_context(UserManagerRepositoryError::QueryError)
-        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+        .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
         Ok(())
     }
 
@@ -98,7 +98,7 @@ impl UserManagerRepository {
             },
         )
         .change_context(UserManagerRepositoryError::QueryError)
-        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+        .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
         Ok(())
     }
 
@@ -126,7 +126,7 @@ impl UserManagerRepository {
             )
             .optional()
             .change_context(UserManagerRepositoryError::RowValueError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
         Ok(row)
     }
 
@@ -167,7 +167,7 @@ impl UserManagerRepository {
             },
         )
         .change_context(UserManagerRepositoryError::QueryError)
-        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+        .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
         Ok(())
     }
 
@@ -193,7 +193,7 @@ impl UserManagerRepository {
             )
             .optional()
             .change_context(UserManagerRepositoryError::RowValueError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         Ok(row.unwrap_or_default())
     }
@@ -224,7 +224,7 @@ impl UserManagerRepository {
                 },
             )
             .change_context(UserManagerRepositoryError::RowValueError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         Ok(row)
     }

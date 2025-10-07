@@ -57,7 +57,7 @@ impl UserRepository {
             },
         )
         .change_context(UserRepositoryError::QueryError)
-        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+        .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         Ok(())
     }
@@ -72,7 +72,7 @@ impl UserRepository {
             },
         )
         .change_context(UserRepositoryError::QueryError)
-        .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+        .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         Ok(())
     }
@@ -104,7 +104,7 @@ impl UserRepository {
             )
             .optional()
             .change_context(UserRepositoryError::RowValueError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         match row {
             Some(row) => Ok(row),
@@ -139,7 +139,7 @@ impl UserRepository {
             )
             .optional()
             .change_context(UserRepositoryError::RowValueError)
-            .attach(StatusCode::UNPROCESSABLE_ENTITY)?;
+            .attach(StatusCode::INTERNAL_SERVER_ERROR)?;
 
         match row {
             Some(row) => Ok(row),

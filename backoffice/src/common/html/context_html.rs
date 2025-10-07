@@ -9,6 +9,7 @@ use maud::{Markup, PreEscaped, html};
 use poem::i18n::Locale;
 use shared::context::{Context, ContextError, FromContext};
 use shared::flash::{Flash, FlashMessageHtml};
+use shared::htmx::HtmxHeader;
 use shared::locale::LocaleExt;
 use std::sync::RwLock;
 
@@ -26,28 +27,28 @@ impl NavigationItem {
             Self {
                 name: "Home".to_string(),
                 url: "/".to_string(),
-                tag: "home".to_string(),
+                tag: "id-tag-home".to_string(),
                 locale: "top-navigation-home".to_string(),
                 role: Role::Visitor,
             },
             Self {
                 name: "URL Redirect".to_string(),
                 url: "/shorty".to_string(),
-                tag: "shorty".to_string(),
+                tag: "id-tag-shorty".to_string(),
                 locale: "top-navigation-url".to_string(),
                 role: Role::User,
             },
             Self {
                 name: "User".to_string(),
                 url: "/user".to_string(),
-                tag: "user".to_string(),
+                tag: "id-tag-user".to_string(),
                 locale: "top-navigation-user".to_string(),
                 role: Role::User,
             },
             Self {
                 name: "Stack".to_string(),
                 url: "/stack".to_string(),
-                tag: "stack".to_string(),
+                tag: "id-tag-stack".to_string(),
                 locale: "top-navigation-stack".to_string(),
                 role: Role::Root,
             },
@@ -67,15 +68,22 @@ struct ContextHtmlCellData {
 pub struct ContextHtmlBuilder {
     flash: Option<Flash>,
     user_id_context: UserPointer,
+    htmx_header: HtmxHeader,
     data: RwLock<ContextHtmlCellData>,
     pub locale: Locale,
 }
 
 impl ContextHtmlBuilder {
-    pub fn new(flash: Option<Flash>, locale: Locale, user_id_context: UserPointer) -> Self {
+    pub fn new(
+        flash: Option<Flash>,
+        locale: Locale,
+        user_id_context: UserPointer,
+        htmx_header: HtmxHeader,
+    ) -> Self {
         Self {
             flash,
             user_id_context,
+            htmx_header,
             data: RwLock::new(ContextHtmlCellData {
                 title: None,
                 content: None,
@@ -148,11 +156,19 @@ impl ContextHtmlBuilder {
                 let footer = data.footer.clone().unwrap_or_else(|| html! {});
                 let current_tag = data.current_tag.clone();
 
+                if self.htmx_header.request {
+                    return html! {
+                        title { (title) " | Rusty Shorty" }
+                        (content)
+                        span #tag-update data-tag=(current_tag) { }
+                    };
+                }
+
                 let new_content = html! {
                     (self.flash.flash_message_html())
                     (self.build_navigation(current_tag))
                     div .content-wrapper {
-                        div .container .main-content {
+                        div .container .main-content #main-content {
                             (content)
                         }
                     }
@@ -175,16 +191,19 @@ impl ContextHtmlBuilder {
         html! {
             nav .nav-content {
                 span .nav-home {
-                    a href="/" { "Rusty Shorty" }
+                    a href="/" hx-push-url="true" hx-target="#main-content" hx-get="/" { "Rusty Shorty" }
                 }
                 (self.parse_navigation(tag))
                 span .nav-user {
                     @if user_context.role >= Role::User {
-                        a href=(USER_ROUTE.to_owned() + "/") { (top_build_locale.hello) }
+                        a href=(USER_ROUTE.to_owned() + "/")
+                            hx-push-url="true" hx-target="#main-content" hx-get=(USER_ROUTE.to_owned() + "/") { (top_build_locale.hello) }
                         " "
-                        a href=(LOGIN_ROUTE.to_owned() + "/logout") { (top_build_locale.hello_logout) }
+                        a href=(LOGIN_ROUTE.to_owned() + "/logout")
+                            hx-push-url="true" hx-target="#main-content" hx-get=(LOGIN_ROUTE.to_owned() + "/") { (top_build_locale.hello_logout) }
                     } @else {
-                        a href=(LOGIN_ROUTE.to_owned() + "/") { (top_build_locale.visitor) }
+                        a href=(LOGIN_ROUTE.to_owned() + "/")
+                            hx-push-url="true" hx-target="#main-content" hx-get=(LOGIN_ROUTE.to_owned() + "/") { (top_build_locale.visitor) }
                     }
                 }
             }
@@ -199,16 +218,16 @@ impl ContextHtmlBuilder {
             }
             let html = if item.tag == tag {
                 html! {
-                    span .nav-item .nav-item-active {
-                        a href=(item.url) {
+                    span .nav-item .nav-item-active id=(item.tag) {
+                        a href=(item.url) hx-push-url="true" hx-target="#main-content" hx-get=(item.url) {
                             (self.locale.text_with_default(item.locale.as_str(), &item.name))
                         }
                     }
                 }
             } else {
                 html! {
-                    span .nav-item {
-                        a href=(item.url) {
+                    span .nav-item id=(item.tag) {
+                        a href=(item.url) hx-push-url="true" hx-target="#main-content" hx-get=(item.url) {
                             (self.locale.text_with_default(item.locale.as_str(), &item.name))
                         }
                     }
@@ -223,6 +242,7 @@ impl ContextHtmlBuilder {
 impl FromContext for ContextHtmlBuilder {
     async fn from_context(ctx: &'_ Context<'_>) -> Result<Self, Report<ContextError>> {
         Ok(Self::new(
+            ctx.inject().await?,
             ctx.inject().await?,
             ctx.inject().await?,
             ctx.inject().await?,

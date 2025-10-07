@@ -28,7 +28,7 @@ fn list_error_stack(
 
     context_html_builder
         .attach_title(title)
-        .set_current_tag("stack")
+        .set_current_tag("id-tag-stack")
         .attach_content(html! {
             h1 { (title) }
             table .table-full {

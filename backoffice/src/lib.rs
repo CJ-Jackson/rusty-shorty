@@ -22,6 +22,7 @@ use poem::{EndpointExt, IntoResponse, Server};
 use shared::config::Config;
 use shared::csrf::{CSRF_PATH, route_csrf};
 use shared::error::boot_error::MainError;
+use shared::htmx::htmx_request_around;
 use shared::log::log_poem_error;
 use user::route::login::LOGIN_ROUTE;
 
@@ -46,6 +47,7 @@ pub async fn boot() -> Result<(), Report<MainError>> {
         .nest(EMBED_PATH, AssetFilesEndPoint::new());
 
     let route = route
+        .around(htmx_request_around)
         .around(init_request_cache)
         .data(build_locale_resources().change_context(MainError::LocaleError)?)
         .with(CookieJarManager::new())
