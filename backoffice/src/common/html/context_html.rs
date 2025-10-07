@@ -159,6 +159,7 @@ impl ContextHtmlBuilder {
                 if self.htmx_header.request {
                     return html! {
                         title { (title) " | Rusty Shorty" }
+                        (self.flash.flash_message_html())
                         (content)
                         span #tag-update data-tag=(current_tag) { }
                     };
