@@ -18,5 +18,6 @@ chrono = { workspace = true }
 paspio = { workspace = true }
 tokio = { workspace = true }
 mry = { workspace = true }
+serde_json = { workspace = true }
 
 regex = "1.11.2"

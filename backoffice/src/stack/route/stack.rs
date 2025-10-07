@@ -7,10 +7,13 @@ use crate::stack::service::stack_service::StackService;
 use maud::{Markup, html};
 use poem::session::Session;
 use poem::web::{Path, Redirect};
-use poem::{Route, get, handler};
+use poem::{IntoResponse, Response, Route, get, handler};
+use serde_json::json;
 use shared::context::Dep;
 use shared::error::FromErrorStack;
 use shared::flash::{Flash, FlashMessage};
+use shared::htmx::HtmxHeader;
+use shared::htmx::response::HtmxResponseExt;
 
 pub const STACK_ROUTE: &str = "/stack";
 
@@ -48,15 +51,16 @@ fn list_error_stack(
                             td .js-date-local { (error_stack.reported_at.to_rfc3339()) }
                             td .action {
                                 a .icon href=(format!("{}/view/{}", STACK_ROUTE, error_stack.id))
-                                title=(lc.action_details) { (open_icon) }
+                                title=(lc.action_details)
+                                hx-get=(format!("{}/view/{}", STACK_ROUTE, error_stack.id)) hx-target="#main-content" { (open_icon) }
                             }
                         }
                     }
                 }
             }
             div .text-right .mt-3 {
-                a .inline-block .js-message-confirm data-msg=(stack_clear_confirm_message(&context_html_builder.locale)) href=(format!("{}/clear", STACK_ROUTE))
-                title=(lc.action_clear) { (clear_icon) }
+                a .inline-block hx-confirm=(stack_clear_confirm_message(&context_html_builder.locale)) href=(format!("{}/clear", STACK_ROUTE))
+                title=(lc.action_clear) hx-delete=(format!("{}/clear", STACK_ROUTE)) { (clear_icon) }
             }
         })
         .build()
@@ -90,7 +94,11 @@ fn fetch_error_stack_detail(
 }
 
 #[handler]
-fn clear(Dep(stack_service): Dep<StackService>, session: &Session) -> poem::Result<Redirect> {
+fn clear(
+    Dep(stack_service): Dep<StackService>,
+    session: &Session,
+    htmx_header: HtmxHeader,
+) -> poem::Result<Response> {
     stack_service
         .clear()
         .map_err(poem::Error::from_error_stack)?;
@@ -98,12 +106,22 @@ fn clear(Dep(stack_service): Dep<StackService>, session: &Session) -> poem::Resu
     session.flash(Flash::Success {
         msg: "Successfully clear records older than 30 days".to_string(),
     });
-    Ok(Redirect::see_other(STACK_ROUTE.to_owned() + "/"))
+    if htmx_header.request {
+        return Ok(()
+            .htmx_response()
+            .location(
+                json!({"path": (STACK_ROUTE.to_owned() + "/").as_str(), "target": "#main-content"})
+                    .to_string()
+                    .as_str(),
+            )
+            .into_response());
+    }
+    Ok(Redirect::see_other(STACK_ROUTE.to_owned() + "/").into_response())
 }
 
 pub fn stack_route() -> Route {
     Route::new()
         .at("/", get(list_error_stack))
         .at("/view/:view_id", get(fetch_error_stack_detail))
-        .at("/clear", get(clear))
+        .at("/clear", get(clear).delete(clear))
 }

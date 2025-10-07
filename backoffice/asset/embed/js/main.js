@@ -34,7 +34,7 @@ function messageConfirm() {
 
 async function clearNavActive() {
     let element = document.getElementById("tag-update");
-    if (element) {
+    if (element !== null) {
         let elements = document.getElementsByClassName("nav-item");
         for (let element of elements) {
             element.classList.remove("nav-item-active");
@@ -44,9 +44,11 @@ async function clearNavActive() {
 
 function addNavActive() {
     let element = document.getElementById("tag-update");
-    if (element) {
+    if (element !== null) {
         let tagElement = document.getElementById(element.dataset.tag);
-        tagElement.classList.add("nav-item-active");
+        if (tagElement !== null) {
+            tagElement.classList.add("nav-item-active");
+        }
     }
 }
 
