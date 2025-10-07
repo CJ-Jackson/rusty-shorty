@@ -72,7 +72,7 @@ impl AddUserForm {
             .attach_title(&user_form_locale.title_add)
             .attach_content(html! {
                 h1 .mt-3 { (user_form_locale.title_add) }
-                form .form method="post" {
+                form hx-boost="true" hx-target="#main-content" .form method="post" {
                     (token)
                     div .form-group {
                         label .label for="username" { (user_form_locale.username) }

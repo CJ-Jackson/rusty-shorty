@@ -21,17 +21,6 @@ function formatToLocalTime() {
 
 formatToLocalTime();
 
-function messageConfirm() {
-    let elements = document.getElementsByClassName("js-message-confirm");
-    for (let element of elements) {
-        element.onclick = function (e) {
-            let msg = this.getAttribute("data-msg");
-            return confirm(msg);
-        }
-        element.classList.remove("js-message-confirm");
-    }
-}
-
 async function clearNavActive() {
     let element = document.getElementById("tag-update");
     if (element !== null) {
@@ -45,6 +34,9 @@ async function clearNavActive() {
 function addNavActive() {
     let element = document.getElementById("tag-update");
     if (element !== null) {
+        if (element.dataset.tag === undefined || element.dataset.tag === "") {
+            return;
+        }
         let tagElement = document.getElementById(element.dataset.tag);
         if (tagElement !== null) {
             tagElement.classList.add("nav-item-active");
@@ -54,7 +46,6 @@ function addNavActive() {
 
 htmx.onLoad(function () {
     formatToLocalTime();
-    messageConfirm();
     clearNavActive().then(function () {
         addNavActive();
     });

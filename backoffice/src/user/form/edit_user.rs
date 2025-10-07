@@ -69,7 +69,7 @@ impl EditUserForm {
         context_html_builder.attach_title(&user_form_locale.title_edit).attach_content(html! {
             h1 .mt-3 { (user_form_locale.title_edit) }
             h2 { (username) }
-            form .form method="post" {
+            form hx-boost="true" hx-target="#main-content" .form method="post" {
                 (token)
                 div .form-group {
                     label .label for="username" { (user_form_locale.username) } br;

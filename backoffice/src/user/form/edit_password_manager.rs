@@ -62,7 +62,7 @@ impl EditPasswordManagerForm {
             .attach_content(html! {
                 h1 .mt-3 { (user_form_locale.title_edit_password) }
                 h2 { (username) }
-                form .form method="post" {
+                form hx-boost="true" hx-target="#main-content" .form method="post" {
                     (token)
                     div .form-group {
                         label .label for="password" { (user_form_locale.password) }

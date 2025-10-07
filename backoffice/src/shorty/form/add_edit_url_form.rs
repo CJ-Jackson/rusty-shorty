@@ -64,7 +64,7 @@ impl AddEditUrlForm {
 
         context_html_builder.attach_title(title).attach_content(html! {
             h1 .mt-3 { (title) }
-            form .form method="post" {
+            form hx-boost="true" hx-target="#main-content" .form method="post" {
                 (token)
                 div .form-group {
                     label .label for="url-path" { (&user_form_locale.url_path) } br;

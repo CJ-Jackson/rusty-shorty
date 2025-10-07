@@ -17,11 +17,14 @@ use poem::http::StatusCode;
 use poem::i18n::{I18NArgs, Locale};
 use poem::session::Session;
 use poem::web::{CsrfToken, CsrfVerifier, Path, Redirect};
-use poem::{Error, IntoResponse, Route, get, handler};
+use poem::{Error, IntoResponse, Response, Route, get, handler};
+use serde_json::json;
 use shared::context::Dep;
 use shared::csrf::{CsrfTokenHtml, CsrfVerifierError};
 use shared::error::{ExtraResultExt, FromErrorStack};
 use shared::flash::{Flash, FlashMessage};
+use shared::htmx::HtmxHeader;
+use shared::htmx::response::HtmxResponseExt;
 use shared::locale::LocaleExt;
 use shared::query_string::form::FormQs;
 
@@ -64,12 +67,15 @@ async fn list_users(
                             td { (user.role.as_stringed()) }
                             @if user_id_context.role == Role::Root {
                                 td .action {
-                                    a .icon href=( format!("{}/edit/{}", USER_ROUTE, user.id)) title=(&user_locale.user_list_action_edit) { (edit_icon) }
+                                    a .icon href=(format!("{}/edit/{}", USER_ROUTE, user.id)) title=(&user_locale.user_list_action_edit)
+                                        hx-get=(format!("{}/edit/{}", USER_ROUTE, user.id)) hx-push-url="true" hx-target="#main-content" { (edit_icon) }
                                     " "
-                                    a .icon href=( format!("{}/edit-password/{}", USER_ROUTE, user.id)) title=(&user_locale.user_list_action_password) { (password_icon) }
+                                    a .icon href=(format!("{}/edit-password/{}", USER_ROUTE, user.id)) title=(&user_locale.user_list_action_password)
+                                        hx-get=(format!("{}/edit-password/{}", USER_ROUTE, user.id)) hx-push-url="true" hx-target="#main-content" { (password_icon) }
                                     " "
-                                    a .icon .js-message-confirm data-msg=(user_logout_confirm_message(&context_html_builder.locale, &user.username))
-                                        href=( format!("{}/sign-out/{}", USER_ROUTE, user.id)) title=(&user_locale.user_list_action_sign_out) { (flag_icon) }
+                                    a .icon hx-confirm=(user_logout_confirm_message(&context_html_builder.locale, &user.username))
+                                        href=(format!("{}/sign-out/{}", USER_ROUTE, user.id)) title=(&user_locale.user_list_action_sign_out)
+                                        hx-get=(format!("{}/sign-out/{}", USER_ROUTE, user.id)) hx-push-url="true" hx-target="#main-content" { (flag_icon) }
                                 }
                             }
                         }
@@ -78,7 +84,8 @@ async fn list_users(
             }
             @if user_id_context.role == Role::Root {
                 div .text-right .mt-3 {
-                    a .inline-block href=( format!("{}/add-user", USER_ROUTE)) title=(&user_locale.user_list_action_add_user) { (plus_icon()) }
+                    a .inline-block href=(format!("{}/add-user", USER_ROUTE)) title=(&user_locale.user_list_action_add_user)
+                        hx-get=(format!("{}/add-user", USER_ROUTE)) hx-push-url="true" hx-target="#main-content" { (plus_icon()) }
                 }
             }
         })
@@ -135,7 +142,8 @@ async fn edit_user_post(
     csrf_token: &CsrfToken,
     csrf_verifier: &CsrfVerifier,
     session: &Session,
-) -> poem::Result<PostResponse> {
+    htmx_header: HtmxHeader,
+) -> poem::Result<Response> {
     let subject_user = edit_user_service
         .fetch_user(user_id)
         .map_err(Error::from_error_stack)?;
@@ -160,9 +168,20 @@ async fn edit_user_post(
                     I18NArgs::from((("user_id", user_id),)),
                 ),
             });
-            Ok(PostResponse::RedirectSuccess(Redirect::see_other(
-                USER_ROUTE.to_owned() + "/",
-            )))
+            if htmx_header.request {
+                return Ok(()
+                    .htmx_response()
+                    .location(
+                        json!({"path": USER_ROUTE.to_owned() + "/", "target": "#main-content"})
+                            .to_string()
+                            .as_str(),
+                    )
+                    .into_response());
+            }
+            Ok(
+                PostResponse::RedirectSuccess(Redirect::see_other(USER_ROUTE.to_owned() + "/"))
+                    .into_response(),
+            )
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
@@ -175,7 +194,8 @@ async fn edit_user_post(
                         Some(subject_user.username),
                     )
                     .await,
-            ))
+            )
+            .into_response())
         }
     }
 }
@@ -212,7 +232,8 @@ async fn edit_user_password_post(
     csrf_token: &CsrfToken,
     csrf_verifier: &CsrfVerifier,
     session: &Session,
-) -> poem::Result<PostResponse> {
+    htmx_header: HtmxHeader,
+) -> poem::Result<Response> {
     let subject_user = edit_password_service
         .fetch_user(user_id)
         .map_err(Error::from_error_stack)?;
@@ -234,9 +255,20 @@ async fn edit_user_password_post(
                     I18NArgs::from((("user_id", user_id),)),
                 ),
             });
-            Ok(PostResponse::RedirectSuccess(Redirect::see_other(
-                USER_ROUTE.to_owned() + "/",
-            )))
+            if htmx_header.request {
+                return Ok(()
+                    .htmx_response()
+                    .location(
+                        json!({"path": USER_ROUTE.to_owned() + "/", "target": "#main-content"})
+                            .to_string()
+                            .as_str(),
+                    )
+                    .into_response());
+            }
+            Ok(
+                PostResponse::RedirectSuccess(Redirect::see_other(USER_ROUTE.to_owned() + "/"))
+                    .into_response(),
+            )
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
@@ -249,7 +281,8 @@ async fn edit_user_password_post(
                         Some(subject_user.username),
                     )
                     .await,
-            ))
+            )
+            .into_response())
         }
     }
 }
@@ -274,7 +307,8 @@ async fn add_user_password_post(
     csrf_token: &CsrfToken,
     csrf_verifier: &CsrfVerifier,
     session: &Session,
-) -> poem::Result<PostResponse> {
+    htmx_header: HtmxHeader,
+) -> poem::Result<Response> {
     csrf_verifier
         .verify(add_user_form.csrf_token.as_str())
         .map_err(Error::from_error_stack)?;
@@ -293,9 +327,20 @@ async fn add_user_password_post(
                     I18NArgs::from((("username", validated.username.as_str()),)),
                 ),
             });
-            Ok(PostResponse::RedirectSuccess(Redirect::see_other(
-                USER_ROUTE.to_owned() + "/",
-            )))
+            if htmx_header.request {
+                return Ok(()
+                    .htmx_response()
+                    .location(
+                        json!({"path": USER_ROUTE.to_owned() + "/", "target": "#main-content"})
+                            .to_string()
+                            .as_str(),
+                    )
+                    .into_response());
+            }
+            Ok(
+                PostResponse::RedirectSuccess(Redirect::see_other(USER_ROUTE.to_owned() + "/"))
+                    .into_response(),
+            )
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
@@ -307,7 +352,8 @@ async fn add_user_password_post(
                         Some(csrf_token.as_html()),
                     )
                     .await,
-            ))
+            )
+            .into_response())
         }
     }
 }
@@ -318,7 +364,8 @@ fn sign_out_user(
     Path(user_id): Path<i64>,
     session: &Session,
     locale: Locale,
-) -> Redirect {
+    htmx_header: HtmxHeader,
+) -> Response {
     let result = user_manager_repository.revoke_all_token_by_id(user_id);
     let l = &locale;
     if result.is_err() {
@@ -329,7 +376,17 @@ fn sign_out_user(
                 I18NArgs::from((("user_id", user_id),)),
             ),
         });
-        return Redirect::see_other(USER_ROUTE.to_owned() + "/");
+        if htmx_header.request {
+            return ()
+                .htmx_response()
+                .location(
+                    json!({"path": USER_ROUTE.to_owned() + "/", "target": "#main-content"})
+                        .to_string()
+                        .as_str(),
+                )
+                .into_response();
+        }
+        return Redirect::see_other(USER_ROUTE.to_owned() + "/").into_response();
     }
     session.flash(Flash::Success {
         msg: l.text_with_default_args(
@@ -338,7 +395,17 @@ fn sign_out_user(
             I18NArgs::from((("user_id", user_id),)),
         ),
     });
-    Redirect::see_other(USER_ROUTE.to_owned() + "/")
+    if htmx_header.request {
+        return ()
+            .htmx_response()
+            .location(
+                json!({"path": USER_ROUTE.to_owned() + "/", "target": "#main-content"})
+                    .to_string()
+                    .as_str(),
+            )
+            .into_response();
+    }
+    Redirect::see_other(USER_ROUTE.to_owned() + "/").into_response()
 }
 
 pub fn user_route() -> Route {

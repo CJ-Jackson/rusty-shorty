@@ -14,11 +14,14 @@ use poem::http::StatusCode;
 use poem::i18n::Locale;
 use poem::session::Session;
 use poem::web::{CsrfToken, CsrfVerifier, Path, Redirect};
-use poem::{Error, IntoResponse, Route, get, handler};
+use poem::{Error, IntoResponse, Response, Route, get, handler};
+use serde_json::json;
 use shared::context::Dep;
 use shared::csrf::{CsrfTokenHtml, CsrfVerifierError};
 use shared::error::{ExtraResultExt, FromErrorStack};
 use shared::flash::{Flash, FlashMessage};
+use shared::htmx::HtmxHeader;
+use shared::htmx::response::HtmxResponseExt;
 use shared::locale::LocaleExt;
 use shared::query_string::form::FormQs;
 
@@ -63,10 +66,12 @@ async fn list_urls(
                             td { (url.username) }
                             td .action {
                                 @if user_id_context.role == Role::Root || user_id_context.id == url.created_by_user_id {
-                                    a .icon href=( format!("{}/edit/{}", SHORTY_ROUTE, url.id)) title=(lc.action_edit) { (edit_icon) }
+                                    a .icon href=( format!("{}/edit/{}", SHORTY_ROUTE, url.id)) title=(lc.action_edit)
+                                        hx-get=( format!("{}/edit/{}", SHORTY_ROUTE, url.id)) hx-target="#main-content" hx-push-url="true" { (edit_icon) }
                                     " "
-                                    a .icon .js-message-confirm data-msg=(short_route_confirm_message(&context_html_builder.locale ,url.id))
-                                    href=( format!("{}/delete/{}", SHORTY_ROUTE, url.id)) title=(lc.action_delete) { (delete_icon) }
+                                    a .icon hx-confirm=(short_route_confirm_message(&context_html_builder.locale ,url.id))
+                                        href=( format!("{}/delete/{}", SHORTY_ROUTE, url.id)) title=(lc.action_delete)
+                                        hx-delete=( format!("{}/delete/{}", SHORTY_ROUTE, url.id)) hx-target="#main-content" { (delete_icon) }
                                 }
                             }
                         }
@@ -74,7 +79,8 @@ async fn list_urls(
                 }
             }
             div .text-right .mt-3 {
-                a .inline-block href=( format!("{}/add", SHORTY_ROUTE)) title=(lc.action_add) { (add_icon) }
+                a .inline-block href=( format!("{}/add", SHORTY_ROUTE)) title=(lc.action_add)
+                    hx-get=( format!("{}/add", SHORTY_ROUTE)) hx-target="#main-content" hx-push-url="true" { (add_icon) }
             }
         })
         .build()
@@ -138,7 +144,8 @@ async fn edit_url_post(
     csrf_token: &CsrfToken,
     csrf_verifier: &CsrfVerifier,
     session: &Session,
-) -> poem::Result<PostResponse> {
+    htmx_header: HtmxHeader,
+) -> poem::Result<Response> {
     let subject_id = edit_url_service
         .fetch_user_id_from_url_id(url_id)
         .map_err(Error::from_error_stack)?;
@@ -162,9 +169,20 @@ async fn edit_url_post(
                     "Successfully edited URL",
                 ),
             });
-            Ok(PostResponse::RedirectSuccess(Redirect::see_other(
-                SHORTY_ROUTE.to_owned() + "/",
-            )))
+            if htmx_header.request {
+                return Ok(()
+                    .htmx_response()
+                    .location(
+                        json!({"path": SHORTY_ROUTE.to_owned() + "/", "target": "#main-content"})
+                            .to_string()
+                            .as_str(),
+                    )
+                    .into_response());
+            }
+            Ok(
+                PostResponse::RedirectSuccess(Redirect::see_other(SHORTY_ROUTE.to_owned() + "/"))
+                    .into_response(),
+            )
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
@@ -177,7 +195,8 @@ async fn edit_url_post(
                         true,
                     )
                     .await,
-            ))
+            )
+            .into_response())
         }
     }
 }
@@ -208,7 +227,8 @@ async fn add_url_post(
     csrf_token: &CsrfToken,
     csrf_verifier: &CsrfVerifier,
     session: &Session,
-) -> poem::Result<PostResponse> {
+    htmx_header: HtmxHeader,
+) -> poem::Result<Response> {
     csrf_verifier
         .verify(add_url_form.csrf_token.as_str())
         .map_err(Error::from_error_stack)?;
@@ -226,9 +246,20 @@ async fn add_url_post(
                     "Successfully added URL",
                 ),
             });
-            Ok(PostResponse::RedirectSuccess(Redirect::see_other(
-                SHORTY_ROUTE.to_owned() + "/",
-            )))
+            if htmx_header.request {
+                return Ok(()
+                    .htmx_response()
+                    .location(
+                        json!({"path": SHORTY_ROUTE.to_owned() + "/", "target": "#main-content"})
+                            .to_string()
+                            .as_str(),
+                    )
+                    .into_response());
+            }
+            Ok(
+                PostResponse::RedirectSuccess(Redirect::see_other(SHORTY_ROUTE.to_owned() + "/"))
+                    .into_response(),
+            )
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
@@ -241,7 +272,8 @@ async fn add_url_post(
                         false,
                     )
                     .await,
-            ))
+            )
+            .into_response())
         }
     }
 }
@@ -253,7 +285,8 @@ async fn delete_url(
     Path(url_id): Path<i64>,
     session: &Session,
     l: Locale,
-) -> poem::Result<Redirect> {
+    htmx_header: HtmxHeader,
+) -> poem::Result<Response> {
     let subject_id = delete_url_service
         .fetch_user_id_from_url_id(url_id)
         .map_err(Error::from_error_stack)?;
@@ -270,7 +303,17 @@ async fn delete_url(
             "Successfully deleted URL",
         ),
     });
-    Ok(Redirect::see_other(SHORTY_ROUTE.to_owned() + "/"))
+    if htmx_header.request {
+        return Ok(()
+            .htmx_response()
+            .location(
+                json!({"path": SHORTY_ROUTE.to_owned() + "/", "target": "#main-content"})
+                    .to_string()
+                    .as_str(),
+            )
+            .into_response());
+    }
+    Ok(Redirect::see_other(SHORTY_ROUTE.to_owned() + "/").into_response())
 }
 
 pub fn shorty_route() -> Route {
@@ -280,6 +323,9 @@ pub fn shorty_route() -> Route {
             "/edit/:url_id",
             must_be_user(get(edit_url_get).post(edit_url_post)),
         )
-        .at("/delete/:url_id", must_be_user(get(delete_url)))
+        .at(
+            "/delete/:url_id",
+            must_be_user(get(delete_url).delete(delete_url)),
+        )
         .at("/add", must_be_user(get(add_url_get).post(add_url_post)))
 }
