@@ -8,8 +8,8 @@ htmx.config.responseHandling = [
 ];
 
 function formatToLocalTime() {
-    let elements = document.getElementsByClassName("js-date-local");
-    new Promise(function () {
+    new Promise(function (resolve) {
+        let elements = document.getElementsByClassName("js-date-local");
         for (let element of elements) {
             let date = new Date(element.innerHTML);
             if (isNaN(date.getTime()) || date.toString() === "Invalid Date" || date.getTime() === 0) {
@@ -17,7 +17,9 @@ function formatToLocalTime() {
             }
             element.innerHTML = date.toLocaleString();
         }
+        resolve("Ok");
     }).then(function () {
+        let elements = document.getElementsByClassName("js-date-local");
         for (let element of elements) {
             element.classList.remove("js-date-local");
         }
