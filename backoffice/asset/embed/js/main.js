@@ -7,8 +7,11 @@ htmx.config.responseHandling = [
     {code: '[45]..', swap: false, error: true}
 ];
 
+async function stub() {
+}
+
 function formatToLocalTime() {
-    new Promise(function (resolve) {
+    stub().then(function () {
         let elements = document.getElementsByClassName("js-date-local");
         for (let element of elements) {
             let date = new Date(element.innerHTML);
@@ -17,7 +20,6 @@ function formatToLocalTime() {
             }
             element.innerHTML = date.toLocaleString();
         }
-        resolve("Ok");
     }).then(function () {
         let elements = document.getElementsByClassName("js-date-local");
         for (let element of elements) {
@@ -34,16 +36,18 @@ async function clearNavActive() {
 }
 
 function addNavActive() {
-    let element = document.getElementById("tag-update");
-    if (element !== null) {
+    let tagUpdateElement = document.getElementById("tag-update");
+    if (tagUpdateElement !== null) {
         clearNavActive().then(function () {
-            if (element.dataset.tag === undefined || element.dataset.tag === "") {
+            if (tagUpdateElement.dataset.tag === undefined || tagUpdateElement.dataset.tag === "") {
                 return;
             }
-            let tagElement = document.getElementById(element.dataset.tag);
+            let tagElement = document.getElementById(tagUpdateElement.dataset.tag);
             if (tagElement !== null) {
                 tagElement.classList.add("nav-item-active");
             }
+        }).then(function () {
+            tagUpdateElement.remove();
         });
     }
 }
