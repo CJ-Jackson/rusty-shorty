@@ -81,6 +81,8 @@ async fn login_post(
                     .into_builder()
                     .path("/")
                     .expires_by_delta(TimeDelta::days(30))
+                    .secure()
+                    .http_only()
                     .build();
 
                 cookie_jar.add(new_cookie);
