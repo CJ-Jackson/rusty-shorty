@@ -200,11 +200,9 @@ impl ContextHtmlBuilder {
                         a href=(USER_ROUTE.to_owned() + "/")
                             hx-push-url="true" hx-target="#main-content" hx-get=(USER_ROUTE.to_owned() + "/") { (top_build_locale.hello) }
                         " "
-                        a href=(LOGIN_ROUTE.to_owned() + "/logout")
-                            hx-push-url="true" hx-target="#main-content" hx-get=(LOGIN_ROUTE.to_owned() + "/") { (top_build_locale.hello_logout) }
+                        a href=(LOGIN_ROUTE.to_owned() + "/logout") { (top_build_locale.hello_logout) }
                     } @else {
-                        a href=(LOGIN_ROUTE.to_owned() + "/")
-                            hx-push-url="true" hx-target="#main-content" hx-get=(LOGIN_ROUTE.to_owned() + "/") { (top_build_locale.visitor) }
+                        a href=(LOGIN_ROUTE.to_owned() + "/") { (top_build_locale.visitor) }
                     }
                 }
             }
