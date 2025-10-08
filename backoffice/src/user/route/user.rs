@@ -18,13 +18,11 @@ use poem::i18n::{I18NArgs, Locale};
 use poem::session::Session;
 use poem::web::{CsrfToken, CsrfVerifier, Path, Redirect};
 use poem::{Error, IntoResponse, Response, Route, get, handler};
-use serde_json::json;
 use shared::context::Dep;
 use shared::csrf::{CsrfTokenHtml, CsrfVerifierError};
 use shared::error::{ExtraResultExt, FromErrorStack};
 use shared::flash::{Flash, FlashMessage};
 use shared::htmx::HtmxHeader;
-use shared::htmx::response::HtmxResponseExt;
 use shared::locale::LocaleExt;
 use shared::query_string::form::FormQs;
 
@@ -94,7 +92,6 @@ async fn list_users(
 
 enum PostResponse {
     Validation(Markup),
-    RedirectSuccess(Redirect),
 }
 
 impl IntoResponse for PostResponse {
@@ -103,7 +100,6 @@ impl IntoResponse for PostResponse {
             PostResponse::Validation(validation) => validation
                 .with_status(StatusCode::UNPROCESSABLE_ENTITY)
                 .into_response(),
-            PostResponse::RedirectSuccess(redirect) => redirect.into_response(),
         }
     }
 }
@@ -168,20 +164,10 @@ async fn edit_user_post(
                     I18NArgs::from((("user_id", user_id),)),
                 ),
             });
-            if htmx_header.request {
-                return Ok(()
-                    .htmx_response()
-                    .location(
-                        json!({"path": USER_ROUTE.to_owned() + "/", "target": "#main-content"})
-                            .to_string()
-                            .as_str(),
-                    )
-                    .into_response());
-            }
-            Ok(
-                PostResponse::RedirectSuccess(Redirect::see_other(USER_ROUTE.to_owned() + "/"))
-                    .into_response(),
-            )
+            Ok(htmx_header.do_location(
+                Redirect::see_other(USER_ROUTE.to_owned() + "/"),
+                "#main-content",
+            ))
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
@@ -255,20 +241,10 @@ async fn edit_user_password_post(
                     I18NArgs::from((("user_id", user_id),)),
                 ),
             });
-            if htmx_header.request {
-                return Ok(()
-                    .htmx_response()
-                    .location(
-                        json!({"path": USER_ROUTE.to_owned() + "/", "target": "#main-content"})
-                            .to_string()
-                            .as_str(),
-                    )
-                    .into_response());
-            }
-            Ok(
-                PostResponse::RedirectSuccess(Redirect::see_other(USER_ROUTE.to_owned() + "/"))
-                    .into_response(),
-            )
+            Ok(htmx_header.do_location(
+                Redirect::see_other(USER_ROUTE.to_owned() + "/"),
+                "#main-content",
+            ))
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
@@ -327,20 +303,10 @@ async fn add_user_password_post(
                     I18NArgs::from((("username", validated.username.as_str()),)),
                 ),
             });
-            if htmx_header.request {
-                return Ok(()
-                    .htmx_response()
-                    .location(
-                        json!({"path": USER_ROUTE.to_owned() + "/", "target": "#main-content"})
-                            .to_string()
-                            .as_str(),
-                    )
-                    .into_response());
-            }
-            Ok(
-                PostResponse::RedirectSuccess(Redirect::see_other(USER_ROUTE.to_owned() + "/"))
-                    .into_response(),
-            )
+            Ok(htmx_header.do_location(
+                Redirect::see_other(USER_ROUTE.to_owned() + "/"),
+                "#main-content",
+            ))
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
@@ -376,17 +342,10 @@ fn sign_out_user(
                 I18NArgs::from((("user_id", user_id),)),
             ),
         });
-        if htmx_header.request {
-            return ()
-                .htmx_response()
-                .location(
-                    json!({"path": USER_ROUTE.to_owned() + "/", "target": "#main-content"})
-                        .to_string()
-                        .as_str(),
-                )
-                .into_response();
-        }
-        return Redirect::see_other(USER_ROUTE.to_owned() + "/").into_response();
+        return htmx_header.do_location(
+            Redirect::see_other(USER_ROUTE.to_owned() + "/"),
+            "#main-content",
+        );
     }
     session.flash(Flash::Success {
         msg: l.text_with_default_args(
@@ -395,17 +354,10 @@ fn sign_out_user(
             I18NArgs::from((("user_id", user_id),)),
         ),
     });
-    if htmx_header.request {
-        return ()
-            .htmx_response()
-            .location(
-                json!({"path": USER_ROUTE.to_owned() + "/", "target": "#main-content"})
-                    .to_string()
-                    .as_str(),
-            )
-            .into_response();
-    }
-    Redirect::see_other(USER_ROUTE.to_owned() + "/").into_response()
+    htmx_header.do_location(
+        Redirect::see_other(USER_ROUTE.to_owned() + "/"),
+        "#main-content",
+    )
 }
 
 pub fn user_route() -> Route {

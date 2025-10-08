@@ -3,7 +3,7 @@ use poem::{IntoResponse, Response};
 
 #[derive(Default)]
 pub struct HtmxResponse {
-    response: Response,
+    pub response: Response,
     location_header: Option<String>,
     push_url_header: Option<String>,
     redirect_header: Option<String>,
@@ -90,68 +90,58 @@ impl IntoResponse for HtmxResponse {
     fn into_response(self) -> Response {
         let mut res = self.response;
         let header = res.headers_mut();
-        if let Some(location) = self.location_header {
-            header.insert(
-                "HX-Location",
-                HeaderValue::from_str(&location).expect("Invalid Header Value"),
-            );
+        if let Some(location) = self.location_header
+            && let Some(location) = HeaderValue::from_str(&location).ok()
+        {
+            header.insert("HX-Location", location);
         }
-        if let Some(push_url) = self.push_url_header {
-            header.insert(
-                "HX-Push-Url",
-                HeaderValue::from_str(&push_url).expect("Invalid Header Value"),
-            );
+        if let Some(push_url) = self.push_url_header
+            && let Some(push_url) = HeaderValue::from_str(&push_url).ok()
+        {
+            header.insert("HX-Push-Url", push_url);
         }
-        if let Some(redirect) = self.redirect_header {
-            header.insert(
-                "HX-Redirect",
-                HeaderValue::from_str(&redirect).expect("Invalid Header Value"),
-            );
+        if let Some(redirect) = self.redirect_header
+            && let Some(redirect) = HeaderValue::from_str(&redirect).ok()
+        {
+            header.insert("HX-Redirect", redirect);
         }
         if self.refresh_header {
             header.insert("HX-Refresh", HeaderValue::from_static("true"));
         }
-        if let Some(replace_url) = self.replace_url_header {
-            header.insert(
-                "HX-Replace-Url",
-                HeaderValue::from_str(&replace_url).expect("Invalid Header Value"),
-            );
+        if let Some(replace_url) = self.replace_url_header
+            && let Some(replace_url) = HeaderValue::from_str(&replace_url).ok()
+        {
+            header.insert("HX-Replace-Url", replace_url);
         }
-        if let Some(reswap) = self.reswap_header {
-            header.insert(
-                "HX-Reswap",
-                HeaderValue::from_str(&reswap).expect("Invalid Header Value"),
-            );
+        if let Some(reswap) = self.reswap_header
+            && let Some(reswap) = HeaderValue::from_str(&reswap).ok()
+        {
+            header.insert("HX-Reswap", reswap);
         }
-        if let Some(retarget) = self.retarget_header {
-            header.insert(
-                "HX-Retarget",
-                HeaderValue::from_str(&retarget).expect("Invalid Header Value"),
-            );
+        if let Some(retarget) = self.retarget_header
+            && let Some(retarget) = HeaderValue::from_str(&retarget).ok()
+        {
+            header.insert("HX-Retarget", retarget);
         }
-        if let Some(reselect) = self.reselect_header {
-            header.insert(
-                "HX-Reselect",
-                HeaderValue::from_str(&reselect).expect("Invalid Header Value"),
-            );
+        if let Some(reselect) = self.reselect_header
+            && let Some(reselect) = HeaderValue::from_str(&reselect).ok()
+        {
+            header.insert("HX-Reselect", reselect);
         }
-        if let Some(trigger) = self.trigger_header {
-            header.insert(
-                "HX-Trigger",
-                HeaderValue::from_str(&trigger).expect("Invalid Header Value"),
-            );
+        if let Some(trigger) = self.trigger_header
+            && let Some(trigger) = HeaderValue::from_str(&trigger).ok()
+        {
+            header.insert("HX-Trigger", trigger);
         }
-        if let Some(trigger_after_settle) = self.trigger_after_settle_header {
-            header.insert(
-                "HX-Trigger-After-Settle",
-                HeaderValue::from_str(&trigger_after_settle).expect("Invalid Header Value"),
-            );
+        if let Some(trigger_after_settle) = self.trigger_after_settle_header
+            && let Some(trigger_after_settle) = HeaderValue::from_str(&trigger_after_settle).ok()
+        {
+            header.insert("HX-Trigger-After-Settle", trigger_after_settle);
         }
-        if let Some(trigger_after_swap) = self.trigger_after_swap_header {
-            header.insert(
-                "HX-Trigger-After-Swap",
-                HeaderValue::from_str(&trigger_after_swap).expect("Invalid Header Value"),
-            );
+        if let Some(trigger_after_swap) = self.trigger_after_swap_header
+            && let Some(trigger_after_swap) = HeaderValue::from_str(&trigger_after_swap).ok()
+        {
+            header.insert("HX-Trigger-After-Swap", trigger_after_swap);
         }
 
         res

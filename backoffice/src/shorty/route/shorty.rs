@@ -15,13 +15,11 @@ use poem::i18n::Locale;
 use poem::session::Session;
 use poem::web::{CsrfToken, CsrfVerifier, Path, Redirect};
 use poem::{Error, IntoResponse, Response, Route, get, handler};
-use serde_json::json;
 use shared::context::Dep;
 use shared::csrf::{CsrfTokenHtml, CsrfVerifierError};
 use shared::error::{ExtraResultExt, FromErrorStack};
 use shared::flash::{Flash, FlashMessage};
 use shared::htmx::HtmxHeader;
-use shared::htmx::response::HtmxResponseExt;
 use shared::locale::LocaleExt;
 use shared::query_string::form::FormQs;
 
@@ -88,7 +86,6 @@ async fn list_urls(
 
 enum PostResponse {
     Validation(Markup),
-    RedirectSuccess(Redirect),
 }
 
 impl IntoResponse for PostResponse {
@@ -97,7 +94,6 @@ impl IntoResponse for PostResponse {
             PostResponse::Validation(validation) => validation
                 .with_status(StatusCode::UNPROCESSABLE_ENTITY)
                 .into_response(),
-            PostResponse::RedirectSuccess(redirect) => redirect.into_response(),
         }
     }
 }
@@ -169,20 +165,10 @@ async fn edit_url_post(
                     "Successfully edited URL",
                 ),
             });
-            if htmx_header.request {
-                return Ok(()
-                    .htmx_response()
-                    .location(
-                        json!({"path": SHORTY_ROUTE.to_owned() + "/", "target": "#main-content"})
-                            .to_string()
-                            .as_str(),
-                    )
-                    .into_response());
-            }
-            Ok(
-                PostResponse::RedirectSuccess(Redirect::see_other(SHORTY_ROUTE.to_owned() + "/"))
-                    .into_response(),
-            )
+            Ok(htmx_header.do_location(
+                Redirect::see_other(SHORTY_ROUTE.to_owned() + "/"),
+                "#main-content",
+            ))
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
@@ -246,20 +232,10 @@ async fn add_url_post(
                     "Successfully added URL",
                 ),
             });
-            if htmx_header.request {
-                return Ok(()
-                    .htmx_response()
-                    .location(
-                        json!({"path": SHORTY_ROUTE.to_owned() + "/", "target": "#main-content"})
-                            .to_string()
-                            .as_str(),
-                    )
-                    .into_response());
-            }
-            Ok(
-                PostResponse::RedirectSuccess(Redirect::see_other(SHORTY_ROUTE.to_owned() + "/"))
-                    .into_response(),
-            )
+            Ok(htmx_header.do_location(
+                Redirect::see_other(SHORTY_ROUTE.to_owned() + "/"),
+                "#main-content",
+            ))
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
@@ -303,17 +279,10 @@ async fn delete_url(
             "Successfully deleted URL",
         ),
     });
-    if htmx_header.request {
-        return Ok(()
-            .htmx_response()
-            .location(
-                json!({"path": SHORTY_ROUTE.to_owned() + "/", "target": "#main-content"})
-                    .to_string()
-                    .as_str(),
-            )
-            .into_response());
-    }
-    Ok(Redirect::see_other(SHORTY_ROUTE.to_owned() + "/").into_response())
+    Ok(htmx_header.do_location(
+        Redirect::see_other(SHORTY_ROUTE.to_owned() + "/"),
+        "#main-content",
+    ))
 }
 
 pub fn shorty_route() -> Route {

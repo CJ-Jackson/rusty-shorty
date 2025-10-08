@@ -1,9 +1,12 @@
 pub mod response;
 
 use crate::context::{Context, ContextError, FromContext};
+use crate::htmx::response::{HtmxResponse, HtmxResponseExt};
 use error_stack::{Report, ResultExt};
-use poem::http::StatusCode;
-use poem::{Endpoint, FromRequest, Request, RequestBody};
+use poem::http::{StatusCode, header};
+use poem::web::Redirect;
+use poem::{Endpoint, FromRequest, IntoResponse, Request, RequestBody, Response};
+use serde_json::json;
 use std::ops::Deref;
 use std::sync::Arc;
 
@@ -91,5 +94,46 @@ impl FromContext for HtmxHeader {
             .await
             .change_context(ContextError::RequestError)?;
         Ok(header)
+    }
+}
+
+impl HtmxHeader {
+    pub fn do_location_htmx_response(&self, redirect: Redirect, target: &str) -> HtmxResponse {
+        let redirect = redirect.into_response();
+        let redirect_url = redirect.header(header::LOCATION).unwrap_or_default();
+        ().htmx_response().location(
+            json!({"path": redirect_url, "target": target})
+                .to_string()
+                .as_str(),
+        )
+    }
+
+    pub fn do_location(&self, redirect: Redirect, target: &str) -> Response {
+        if self.request {
+            return self
+                .do_location_htmx_response(redirect, target)
+                .into_response();
+        }
+        redirect.into_response()
+    }
+
+    pub fn do_redirect_htmx_response(&self, redirect: Redirect) -> HtmxResponse {
+        let redirect = redirect.into_response();
+        let redirect_url = redirect.header(header::LOCATION).unwrap_or_default();
+        ().htmx_response().redirect(redirect_url)
+    }
+
+    pub fn do_redirect(&self, redirect: Redirect) -> Response {
+        if self.request {
+            return self.do_redirect_htmx_response(redirect).into_response();
+        }
+        redirect.into_response()
+    }
+
+    pub fn do_htmx_response(&self, htmx_response: HtmxResponse) -> Response {
+        if self.request {
+            return htmx_response.into_response();
+        }
+        htmx_response.response
     }
 }

@@ -7,13 +7,11 @@ use crate::stack::service::stack_service::StackService;
 use maud::{Markup, html};
 use poem::session::Session;
 use poem::web::{Path, Redirect};
-use poem::{IntoResponse, Response, Route, get, handler};
-use serde_json::json;
+use poem::{Response, Route, get, handler};
 use shared::context::Dep;
 use shared::error::FromErrorStack;
 use shared::flash::{Flash, FlashMessage};
 use shared::htmx::HtmxHeader;
-use shared::htmx::response::HtmxResponseExt;
 
 pub const STACK_ROUTE: &str = "/stack";
 
@@ -106,17 +104,10 @@ fn clear(
     session.flash(Flash::Success {
         msg: "Successfully clear records older than 30 days".to_string(),
     });
-    if htmx_header.request {
-        return Ok(()
-            .htmx_response()
-            .location(
-                json!({"path": (STACK_ROUTE.to_owned() + "/").as_str(), "target": "#main-content"})
-                    .to_string()
-                    .as_str(),
-            )
-            .into_response());
-    }
-    Ok(Redirect::see_other(STACK_ROUTE.to_owned() + "/").into_response())
+    Ok(htmx_header.do_location(
+        Redirect::see_other(STACK_ROUTE.to_owned() + "/"),
+        "#main-content",
+    ))
 }
 
 pub fn stack_route() -> Route {
