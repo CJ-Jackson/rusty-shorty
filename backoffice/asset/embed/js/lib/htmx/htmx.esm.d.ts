@@ -1,0 +1,1 @@
+../../../../js-library/htmx/2.0.7/htmx.esm.d.ts

@@ -1,8 +1,5 @@
 {
   "imports": {
-    "htmx": "https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.7/htmx.esm.js"
-  },
-  "integrity": {
-    "https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.7/htmx.esm.js": "sha512-eonLbuOQ77TfxJJRe3g25HQAo+s/THPVfvQ6G3tUmlVcUceoBOgDoBcXOBhOjuq14ENsxcG7vQb8G5HwbY43Ow=="
+    "htmx": "/assets/js/lib/htmx/htmx.esm.js"
   }
 }

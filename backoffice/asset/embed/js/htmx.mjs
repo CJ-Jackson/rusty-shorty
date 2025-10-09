@@ -1,1 +1,1 @@
-../../js/htmx.esm.js
+lib/htmx/htmx.esm.js

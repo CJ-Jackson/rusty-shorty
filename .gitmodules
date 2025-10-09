@@ -1,0 +1,3 @@
+[submodule "backoffice/asset/js-library"]
+	path = backoffice/asset/js-library
+	url = git@github.com:CJ-Jackson/js-library.git
