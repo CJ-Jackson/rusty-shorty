@@ -1,1 +1,1 @@
-../../../../js-library/htmx/2.0.7/htmx.esm.js
+../../../../js-library/htmx/2.0.7/custom/rev_01/htmx.esm.js
