@@ -62,6 +62,7 @@ struct ContextHtmlCellData {
     content: Option<Markup>,
     head: Option<Markup>,
     footer: Option<Markup>,
+    flash: Option<Flash>,
     current_tag: String,
 }
 
@@ -89,6 +90,7 @@ impl ContextHtmlBuilder {
                 content: None,
                 head: None,
                 footer: None,
+                flash: None,
                 current_tag: "".to_string(),
             }),
             locale,
@@ -137,6 +139,24 @@ impl ContextHtmlBuilder {
         self
     }
 
+    pub fn attach_flash(&self, flash: Flash) -> &Self {
+        match self.data.try_write() {
+            Ok(mut data) => {
+                data.flash = Some(flash);
+            }
+            Err(_) => {}
+        }
+        self
+    }
+
+    pub fn attach_form_flash_error(&self) -> &Self {
+        self.attach_flash(Flash::Error {
+            msg: self
+                .locale
+                .text_with_default("validate-flash", "Please check the form above for errors."),
+        })
+    }
+
     pub fn set_current_tag(&self, tag: &str) -> &Self {
         match self.data.try_write() {
             Ok(mut data) => {
@@ -155,13 +175,18 @@ impl ContextHtmlBuilder {
                 let head = data.head.clone().unwrap_or_else(|| html! {});
                 let footer = data.footer.clone().unwrap_or_else(|| html! {});
                 let current_tag = data.current_tag.clone();
+                let flash = if data.flash.is_some() {
+                    data.flash.clone()
+                } else {
+                    self.flash.clone()
+                };
 
                 if self.htmx_header.request {
                     return html! {
                         title { (title) " | Rusty Shorty" }
                         (content)
                         div #alert hx-swap-oob="true" {
-                            (self.flash.flash_message_html())
+                            (flash.flash_message_html())
                         }
                         div #command hx-swap-oob="true" {
                             span #tag-update data-tag=(current_tag) { }
@@ -174,7 +199,7 @@ impl ContextHtmlBuilder {
 
                 let new_content = html! {
                     div #alert {
-                        (self.flash.flash_message_html())
+                        (flash.flash_message_html())
                     }
                     (self.build_navigation(current_tag))
                     div .content-wrapper {

@@ -49,8 +49,8 @@ fn list_error_stack(
                             td .js-date-local { (error_stack.reported_at.to_rfc3339()) }
                             td .action {
                                 a .icon href=(format!("{}/view/{}", STACK_ROUTE, error_stack.id))
-                                title=(lc.action_details)
-                                hx-get=(format!("{}/view/{}", STACK_ROUTE, error_stack.id)) hx-target="#main-content" { (open_icon) }
+                                    title=(lc.action_details) hx-get=(format!("{}/view/{}", STACK_ROUTE, error_stack.id))
+                                    hx-push-url="true" hx-target="#main-content" { (open_icon) }
                             }
                         }
                     }

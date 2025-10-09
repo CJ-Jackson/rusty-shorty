@@ -150,13 +150,13 @@ async fn edit_user_post(
         .as_validated(&edit_user_service, &subject_user.username)
         .await
         .0;
+    let l = &context_html_builder.locale;
     match validated_result {
         Ok(validated) => {
             edit_user_service
                 .edit_user_submit(user_id, &validated)
                 .log_it()
                 .map_err(Error::from_error_stack)?;
-            let l = &context_html_builder.locale;
             session.flash(Flash::Success {
                 msg: l.text_with_default_args(
                     "user-route-flash-edit-success",
@@ -171,6 +171,7 @@ async fn edit_user_post(
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
+            context_html_builder.attach_form_flash_error();
             Ok(PostResponse::Validation(
                 edit_user_form
                     .as_form_html(
@@ -227,13 +228,13 @@ async fn edit_user_password_post(
         .verify(edit_password_manager_form.csrf_token.as_str())
         .map_err(Error::from_error_stack)?;
     let validated_result = edit_password_manager_form.as_validated().await.0;
+    let l = &context_html_builder.locale;
     match validated_result {
         Ok(validated) => {
             edit_password_service
                 .edit_password_submit(user_id, &validated)
                 .log_it()
                 .map_err(Error::from_error_stack)?;
-            let l = &context_html_builder.locale;
             session.flash(Flash::Success {
                 msg: l.text_with_default_args(
                     "user-route-flash-password-success",
@@ -248,6 +249,7 @@ async fn edit_user_password_post(
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
+            context_html_builder.attach_form_flash_error();
             Ok(PostResponse::Validation(
                 edit_password_manager_form
                     .as_form_html(
@@ -289,13 +291,14 @@ async fn add_user_password_post(
         .verify(add_user_form.csrf_token.as_str())
         .map_err(Error::from_error_stack)?;
     let validated_result = add_user_form.as_validated(&add_user_service).await.0;
+    let l = &context_html_builder.locale;
     match validated_result {
         Ok(validated) => {
             add_user_service
                 .add_user_submit(&validated)
                 .log_it()
                 .map_err(Error::from_error_stack)?;
-            let l = &context_html_builder.locale;
+
             session.flash(Flash::Success {
                 msg: l.text_with_default_args(
                     "user-route-flash-add-success",
@@ -310,6 +313,7 @@ async fn add_user_password_post(
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
+            context_html_builder.attach_form_flash_error();
             Ok(PostResponse::Validation(
                 add_user_form
                     .as_form_html(

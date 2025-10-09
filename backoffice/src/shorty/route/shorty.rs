@@ -152,13 +152,13 @@ async fn edit_url_post(
         .verify(edit_url_form.csrf_token.as_str())
         .map_err(Error::from_error_stack)?;
     let validated_result = edit_url_form.as_validated().await.0;
+    let l = &context_html_builder.locale;
     match validated_result {
         Ok(validated) => {
             edit_url_service
                 .edit_url_submit(&validated, url_id)
                 .log_it()
                 .map_err(Error::from_error_stack)?;
-            let l = &context_html_builder.locale;
             session.flash(Flash::Success {
                 msg: l.text_with_default(
                     "shorty-route-flash-success-edit-url",
@@ -172,6 +172,7 @@ async fn edit_url_post(
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
+            context_html_builder.attach_form_flash_error();
             Ok(PostResponse::Validation(
                 edit_url_form
                     .as_form_html(
@@ -219,13 +220,14 @@ async fn add_url_post(
         .verify(add_url_form.csrf_token.as_str())
         .map_err(Error::from_error_stack)?;
     let validated_result = add_url_form.as_validated().await.0;
+    let l = &context_html_builder.locale;
     match validated_result {
         Ok(validated) => {
             add_url_service
                 .add_url_submit(&validated, user_id_context.id)
                 .log_it()
                 .map_err(Error::from_error_stack)?;
-            let l = &context_html_builder.locale;
+
             session.flash(Flash::Success {
                 msg: l.text_with_default(
                     "shorty-route-flash-success-add-url",
@@ -239,6 +241,7 @@ async fn add_url_post(
         }
         Err(error) => {
             let errors = error.as_message(&context_html_builder.locale);
+            context_html_builder.attach_form_flash_error();
             Ok(PostResponse::Validation(
                 add_url_form
                     .as_form_html(

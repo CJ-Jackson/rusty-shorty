@@ -39,3 +39,5 @@ validate-time-max = Must be before { $max }
 validate-username-reserved = Username is reserved
 
 validate-must-be-kebab-case = Must be kebab case
+
+validate-flash = Please check the form above for errors.
