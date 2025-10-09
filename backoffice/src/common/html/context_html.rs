@@ -159,14 +159,23 @@ impl ContextHtmlBuilder {
                 if self.htmx_header.request {
                     return html! {
                         title { (title) " | Rusty Shorty" }
-                        (self.flash.flash_message_html())
                         (content)
-                        span #tag-update data-tag=(current_tag) { }
+                        div #alert hx-swap-oob="true" {
+                            (self.flash.flash_message_html())
+                        }
+                        div #command hx-swap-oob="true" {
+                            span #tag-update data-tag=(current_tag) { }
+                        }
+                        div #footer hx-swap-oob="true" {
+                            (footer)
+                        }
                     };
                 }
 
                 let new_content = html! {
-                    (self.flash.flash_message_html())
+                    div #alert {
+                        (self.flash.flash_message_html())
+                    }
                     (self.build_navigation(current_tag))
                     div .content-wrapper {
                         div .container .main-content #main-content {
