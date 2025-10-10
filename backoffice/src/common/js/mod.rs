@@ -17,6 +17,8 @@ pub fn js_boot() -> String {
 
 pub fn js_vec_wrap(vec: Vec<String>) -> Markup {
     html! {
-        script type="module" { (PreEscaped(vec.join("\n"))) }
+        @for value in vec {
+            script type="module" { (PreEscaped(value)) }
+        }
     }
 }
