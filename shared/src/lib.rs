@@ -12,5 +12,4 @@ pub mod htmx;
 pub mod locale;
 pub mod log;
 pub mod password;
-pub mod path_option;
 pub mod query_string;

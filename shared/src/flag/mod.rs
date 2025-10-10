@@ -1,3 +1,5 @@
+pub mod path_edit;
+
 use poem::{Endpoint, FromRequest, IntoEndpoint, Request, RequestBody};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

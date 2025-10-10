@@ -19,10 +19,10 @@ use shared::context::Dep;
 use shared::csrf::{CsrfTokenHtml, CsrfVerifierError};
 use shared::error::{ExtraResultExt, FromErrorStack};
 use shared::flag::{Flag, flag_add, flag_edit};
+use shared::flag::path_edit::PathEdit;
 use shared::flash::{Flash, FlashMessage};
 use shared::htmx::HtmxHeader;
 use shared::locale::LocaleExt;
-use shared::path_option::PathOption;
 use shared::query_string::form::FormQs;
 
 pub const SHORTY_ROUTE: &str = "/shorty";
@@ -105,7 +105,7 @@ async fn url_get(
     Dep(context_html_builder): Dep<ContextHtmlBuilder>,
     Dep(edit_url_service): Dep<EditUrlService>,
     Dep(user_id_context): Dep<UserPointer>,
-    PathOption(url_id): PathOption<i64>,
+    PathEdit(url_id): PathEdit<i64>,
     csrf_token: &CsrfToken,
     flag: Flag,
 ) -> poem::Result<Markup> {
@@ -141,7 +141,7 @@ async fn url_post(
     Dep(edit_url_service): Dep<EditUrlService>,
     Dep(add_url_service): Dep<AddUrlService>,
     Dep(user_id_context): Dep<UserPointer>,
-    PathOption(url_id): PathOption<i64>,
+    PathEdit(url_id): PathEdit<i64>,
     FormQs(edit_url_form): FormQs<AddEditUrlForm>,
     csrf_token: &CsrfToken,
     csrf_verifier: &CsrfVerifier,
