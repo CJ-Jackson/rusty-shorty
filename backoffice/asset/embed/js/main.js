@@ -49,3 +49,20 @@ htmx.onLoad(function () {
     formatToLocalTime();
     addNavActive();
 });
+
+htmx.on("htmx:requestError", function (evt) {
+    if (evt.detail.xhr.status === 422) {
+        return;
+    }
+    htmx.swap("#main-content", evt.detail.xhr.responseText, {
+        swapStyle: "innerHTML",
+        swapDelay: 0,
+        settleDelay: 0,
+        transition: false,
+        ignoreTitle: true,
+        head: "<title>" + evt.detail.xhr.status + " " + evt.detail.xhr.statusText + "</title>",
+        scroll: "top",
+        show: "#main-content",
+        focusScroll: true
+    });
+});
