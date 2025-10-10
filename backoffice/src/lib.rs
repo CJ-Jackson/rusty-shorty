@@ -21,6 +21,7 @@ use poem::session::{CookieConfig, CookieSession};
 use poem::{EndpointExt, IntoResponse, Server};
 use shared::config::Config;
 use shared::csrf::{CSRF_PATH, route_csrf};
+use shared::embed::enforce_min_js_on_prod;
 use shared::error::boot_error::MainError;
 use shared::htmx::htmx_request_around;
 use shared::log::log_poem_error;
@@ -44,7 +45,10 @@ pub async fn boot() -> Result<(), Report<MainError>> {
         .nest(SHORTY_ROUTE, visitor_redirect(shorty_route()))
         .nest(CSRF_PATH, route_csrf())
         .nest(STACK_ROUTE, visitor_redirect(must_be_root(stack_route())))
-        .nest(EMBED_PATH, AssetFilesEndPoint::new());
+        .nest(
+            EMBED_PATH,
+            enforce_min_js_on_prod(AssetFilesEndPoint::new()),
+        );
 
     let route = route
         .around(htmx_request_around)

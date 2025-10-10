@@ -3,7 +3,7 @@ pub mod locale;
 pub mod validate;
 
 use crate::common::embed::AssetHidden;
-use crate::common::js::{js_main, js_vec_wrap};
+use crate::common::js::{js_boot, js_vec_wrap};
 use maud::{DOCTYPE, Markup, PreEscaped, html};
 use shared::embed::EmbedAsString;
 
@@ -44,7 +44,7 @@ fn html_doc(title: &str, content: Markup, head: Markup, footer: Markup) -> Marku
                 div #footer {
                     (footer)
                 }
-                (js_vec_wrap(vec![js_main()]))
+                (js_vec_wrap(vec![js_boot()]))
             }
         }
     }

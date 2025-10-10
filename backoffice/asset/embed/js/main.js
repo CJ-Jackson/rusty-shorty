@@ -1,4 +1,4 @@
-import htmx from 'htmx'
+import htmx from './lib/htmx/htmx.esm.js'
 
 async function stub() {
 }
@@ -45,33 +45,35 @@ function addNavActive() {
     }
 }
 
-htmx.onLoad(function () {
-    formatToLocalTime();
-    addNavActive();
-});
-
-htmx.on("htmx:responseError", function (evt) {
-    if (evt.detail.xhr.status === 422) {
-        return;
-    }
-
-    let pre = document.createElement("pre");
-    pre.classList.add("pre");
-    pre.innerText = evt.detail.xhr.responseText;
-
-    let div = document.createElement("div");
-    div.innerHTML = "<h1>Error " + evt.detail.xhr.status + " " + evt.detail.xhr.statusText + "</h1><br>";
-    div.appendChild(pre);
-
-    htmx.swap("#main-content", div.outerHTML, {
-        swapStyle: "innerHTML",
-        swapDelay: 0,
-        settleDelay: 0,
-        transition: false,
-        ignoreTitle: true,
-        head: "<title>" + evt.detail.xhr.status + " " + evt.detail.xhr.statusText + "</title>",
-        scroll: "top",
-        show: "#main-content",
-        focusScroll: true
+export function start() {
+    htmx.onLoad(function () {
+        formatToLocalTime();
+        addNavActive();
     });
-});
+
+    htmx.on("htmx:responseError", function (evt) {
+        if (evt.detail.xhr.status === 422) {
+            return;
+        }
+
+        let pre = document.createElement("pre");
+        pre.classList.add("pre");
+        pre.innerText = evt.detail.xhr.responseText;
+
+        let div = document.createElement("div");
+        div.innerHTML = "<h1>Error " + evt.detail.xhr.status + " " + evt.detail.xhr.statusText + "</h1><br>";
+        div.appendChild(pre);
+
+        htmx.swap("#main-content", div.outerHTML, {
+            swapStyle: "innerHTML",
+            swapDelay: 0,
+            settleDelay: 0,
+            transition: false,
+            ignoreTitle: true,
+            head: "<title>" + evt.detail.xhr.status + " " + evt.detail.xhr.statusText + "</title>",
+            scroll: "top",
+            show: "#main-content",
+            focusScroll: true
+        });
+    });
+}

@@ -7,7 +7,6 @@ pub const EMBED_PATH: &'static str = "/assets/";
 
 #[derive(Embed)]
 #[folder = "$CARGO_MANIFEST_DIR/asset/embed/"]
-#[exclude = "*.mjs"]
 pub struct Asset;
 
 pub type AssetFileEndPoint = EmbeddedFileEndpoint<Asset>;
@@ -15,6 +14,7 @@ pub type AssetFilesEndPoint = EmbeddedFilesEndpoint<Asset>;
 
 #[derive(Embed)]
 #[folder = "$CARGO_MANIFEST_DIR/asset/embed_hidden/"]
+#[exclude = "assets/**"]
 pub struct AssetHidden;
 
 #[derive(Embed)]
