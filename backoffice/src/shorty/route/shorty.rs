@@ -18,9 +18,11 @@ use poem::{Error, IntoResponse, Response, Route, get, handler};
 use shared::context::Dep;
 use shared::csrf::{CsrfTokenHtml, CsrfVerifierError};
 use shared::error::{ExtraResultExt, FromErrorStack};
+use shared::flag::{Flag, flag_add, flag_edit};
 use shared::flash::{Flash, FlashMessage};
 use shared::htmx::HtmxHeader;
 use shared::locale::LocaleExt;
+use shared::path_option::PathOption;
 use shared::query_string::form::FormQs;
 
 pub const SHORTY_ROUTE: &str = "/shorty";
@@ -99,72 +101,94 @@ impl IntoResponse for PostResponse {
 }
 
 #[handler]
-async fn edit_url_get(
+async fn url_get(
     Dep(context_html_builder): Dep<ContextHtmlBuilder>,
     Dep(edit_url_service): Dep<EditUrlService>,
     Dep(user_id_context): Dep<UserPointer>,
-    Path(url_id): Path<i64>,
+    PathOption(url_id): PathOption<i64>,
     csrf_token: &CsrfToken,
+    flag: Flag,
 ) -> poem::Result<Markup> {
-    let subject_id = edit_url_service
-        .fetch_user_id_from_url_id(url_id)
-        .map_err(Error::from_error_stack)?;
-    if user_id_context.role < Role::Root && user_id_context.id != subject_id.created_by_user_id {
-        return Err(Error::from_status(StatusCode::FORBIDDEN));
+    let mut url_form = AddEditUrlForm::default();
+    if flag.is_edit() {
+        let subject_id = edit_url_service
+            .fetch_user_id_from_url_id(url_id)
+            .map_err(Error::from_error_stack)?;
+        if user_id_context.role < Role::Root && user_id_context.id != subject_id.created_by_user_id
+        {
+            return Err(Error::from_status(StatusCode::FORBIDDEN));
+        }
+        let subject_url = edit_url_service
+            .get_url_redirect(url_id)
+            .map_err(Error::from_error_stack)?;
+        url_form.url_path = subject_url.url_path;
+        url_form.url_redirect = subject_url.url_redirect;
     }
-    let subject_url = edit_url_service
-        .get_url_redirect(url_id)
-        .map_err(Error::from_error_stack)?;
 
-    let mut edit_url = AddEditUrlForm::default();
-    edit_url.url_path = subject_url.url_path;
-    edit_url.url_redirect = subject_url.url_redirect;
-
-    Ok(edit_url
+    Ok(url_form
         .as_form_html(
             &context_html_builder,
             None,
             Some(csrf_token.as_html()),
-            true,
+            flag.is_edit(),
         )
         .await)
 }
 
 #[handler]
-async fn edit_url_post(
+async fn url_post(
     Dep(context_html_builder): Dep<ContextHtmlBuilder>,
     Dep(edit_url_service): Dep<EditUrlService>,
+    Dep(add_url_service): Dep<AddUrlService>,
     Dep(user_id_context): Dep<UserPointer>,
-    Path(url_id): Path<i64>,
+    PathOption(url_id): PathOption<i64>,
     FormQs(edit_url_form): FormQs<AddEditUrlForm>,
     csrf_token: &CsrfToken,
     csrf_verifier: &CsrfVerifier,
     session: &Session,
     htmx_header: HtmxHeader,
+    flag: Flag,
 ) -> poem::Result<Response> {
-    let subject_id = edit_url_service
-        .fetch_user_id_from_url_id(url_id)
-        .map_err(Error::from_error_stack)?;
-    if user_id_context.role < Role::Root && user_id_context.id != subject_id.created_by_user_id {
-        return Err(Error::from_status(StatusCode::FORBIDDEN));
+    if flag.is_edit() {
+        let subject_id = edit_url_service
+            .fetch_user_id_from_url_id(url_id)
+            .map_err(Error::from_error_stack)?;
+        if user_id_context.role < Role::Root && user_id_context.id != subject_id.created_by_user_id
+        {
+            return Err(Error::from_status(StatusCode::FORBIDDEN));
+        }
     }
     csrf_verifier
         .verify(edit_url_form.csrf_token.as_str())
         .map_err(Error::from_error_stack)?;
     let validated_result = edit_url_form.as_validated().await.0;
-    let l = &context_html_builder.locale;
     match validated_result {
         Ok(validated) => {
-            edit_url_service
-                .edit_url_submit(&validated, url_id)
-                .log_it()
-                .map_err(Error::from_error_stack)?;
-            session.flash(Flash::Success {
-                msg: l.text_with_default(
-                    "shorty-route-flash-success-edit-url",
-                    "Successfully edited URL",
-                ),
-            });
+            let l = &context_html_builder.locale;
+            if flag.is_edit() {
+                edit_url_service
+                    .edit_url_submit(&validated, url_id)
+                    .log_it()
+                    .map_err(Error::from_error_stack)?;
+                session.flash(Flash::Success {
+                    msg: l.text_with_default(
+                        "shorty-route-flash-success-edit-url",
+                        "Successfully edited URL",
+                    ),
+                });
+            } else if flag.is_add() {
+                add_url_service
+                    .add_url_submit(&validated, user_id_context.id)
+                    .log_it()
+                    .map_err(Error::from_error_stack)?;
+                session.flash(Flash::Success {
+                    msg: l.text_with_default(
+                        "shorty-route-flash-success-add-url",
+                        "Successfully added URL",
+                    ),
+                });
+            }
+
             Ok(htmx_header.do_location(
                 Redirect::see_other(SHORTY_ROUTE.to_owned() + "/"),
                 "#main-content",
@@ -179,76 +203,7 @@ async fn edit_url_post(
                         &context_html_builder,
                         Some(errors),
                         Some(csrf_token.as_html()),
-                        true,
-                    )
-                    .await,
-            )
-            .into_response())
-        }
-    }
-}
-
-#[handler]
-async fn add_url_get(
-    Dep(context_html_builder): Dep<ContextHtmlBuilder>,
-    csrf_token: &CsrfToken,
-) -> poem::Result<Markup> {
-    let add_url_form = AddEditUrlForm::default();
-
-    Ok(add_url_form
-        .as_form_html(
-            &context_html_builder,
-            None,
-            Some(csrf_token.as_html()),
-            false,
-        )
-        .await)
-}
-
-#[handler]
-async fn add_url_post(
-    Dep(context_html_builder): Dep<ContextHtmlBuilder>,
-    Dep(add_url_service): Dep<AddUrlService>,
-    Dep(user_id_context): Dep<UserPointer>,
-    FormQs(add_url_form): FormQs<AddEditUrlForm>,
-    csrf_token: &CsrfToken,
-    csrf_verifier: &CsrfVerifier,
-    session: &Session,
-    htmx_header: HtmxHeader,
-) -> poem::Result<Response> {
-    csrf_verifier
-        .verify(add_url_form.csrf_token.as_str())
-        .map_err(Error::from_error_stack)?;
-    let validated_result = add_url_form.as_validated().await.0;
-    let l = &context_html_builder.locale;
-    match validated_result {
-        Ok(validated) => {
-            add_url_service
-                .add_url_submit(&validated, user_id_context.id)
-                .log_it()
-                .map_err(Error::from_error_stack)?;
-
-            session.flash(Flash::Success {
-                msg: l.text_with_default(
-                    "shorty-route-flash-success-add-url",
-                    "Successfully added URL",
-                ),
-            });
-            Ok(htmx_header.do_location(
-                Redirect::see_other(SHORTY_ROUTE.to_owned() + "/"),
-                "#main-content",
-            ))
-        }
-        Err(error) => {
-            let errors = error.as_message(&context_html_builder.locale);
-            context_html_builder.attach_form_flash_error();
-            Ok(PostResponse::Validation(
-                add_url_form
-                    .as_form_html(
-                        &context_html_builder,
-                        Some(errors),
-                        Some(csrf_token.as_html()),
-                        false,
+                        flag.is_edit(),
                     )
                     .await,
             )
@@ -293,11 +248,11 @@ pub fn shorty_route() -> Route {
         .at("/", must_be_user(get(list_urls)))
         .at(
             "/edit/:url_id",
-            must_be_user(get(edit_url_get).post(edit_url_post)),
+            must_be_user(flag_edit(get(url_get).post(url_post))),
         )
         .at(
             "/delete/:url_id",
             must_be_user(get(delete_url).delete(delete_url)),
         )
-        .at("/add", must_be_user(get(add_url_get).post(add_url_post)))
+        .at("/add", must_be_user(flag_add(get(url_get).post(url_post))))
 }
