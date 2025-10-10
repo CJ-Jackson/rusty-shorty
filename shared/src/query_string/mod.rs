@@ -1,3 +1,3 @@
 pub mod form;
 pub mod query;
-pub mod serde_rs_config;
+pub mod serde_qs_config;

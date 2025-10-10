@@ -1,9 +1,9 @@
 use poem::{Endpoint, IntoEndpoint, Request};
 use serde_qs::Config;
 
-struct SerdeRsConfig<E: Endpoint>(Config, E);
+struct SerdeQsConfig<E: Endpoint>(Config, E);
 
-impl<E: Endpoint> Endpoint for SerdeRsConfig<E> {
+impl<E: Endpoint> Endpoint for SerdeQsConfig<E> {
     type Output = E::Output;
 
     async fn call(&self, mut req: Request) -> poem::Result<Self::Output> {
@@ -13,10 +13,10 @@ impl<E: Endpoint> Endpoint for SerdeRsConfig<E> {
     }
 }
 
-pub fn with_serde_rs_config<E>(config: Config, endpoint: E) -> impl Endpoint
+pub fn with_serde_qs_config<E>(config: Config, endpoint: E) -> impl Endpoint
 where
     E: IntoEndpoint,
     E::Endpoint: 'static,
 {
-    SerdeRsConfig(config, endpoint.into_endpoint())
+    SerdeQsConfig(config, endpoint.into_endpoint())
 }
