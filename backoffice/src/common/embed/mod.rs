@@ -7,6 +7,8 @@ pub const EMBED_PATH: &'static str = "/assets/";
 
 #[derive(Embed)]
 #[folder = "$CARGO_MANIFEST_DIR/asset/embed/"]
+#[cfg_attr(not(debug_assertions), include = "**.min.{css,js}")]
+#[cfg_attr(not(debug_assertions), include = "favicon/**")]
 pub struct Asset;
 
 pub type AssetFileEndPoint = EmbeddedFileEndpoint<Asset>;
