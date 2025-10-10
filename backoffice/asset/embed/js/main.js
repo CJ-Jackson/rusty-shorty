@@ -54,7 +54,7 @@ htmx.on("htmx:requestError", function (evt) {
     if (evt.detail.xhr.status === 422) {
         return;
     }
-    htmx.swap("#main-content", evt.detail.xhr.responseText, {
+    htmx.swap("#main-content", '<pre class="pre">' + evt.detail.xhr.responseText + "</pre>", {
         swapStyle: "innerHTML",
         swapDelay: 0,
         settleDelay: 0,
