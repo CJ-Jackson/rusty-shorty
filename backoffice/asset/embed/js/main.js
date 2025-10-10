@@ -54,13 +54,12 @@ htmx.on("htmx:responseError", function (evt) {
     if (evt.detail.xhr.status === 422) {
         return;
     }
-    
+
     let pre = document.createElement("pre");
     pre.classList.add("pre");
     pre.innerText = evt.detail.xhr.responseText;
 
     let div = document.createElement("div");
-    div.classList.add("alert", "alert-danger");
     div.innerHTML = "<h1>Error " + evt.detail.xhr.status + " " + evt.detail.xhr.statusText + "</h1><br>";
     div.appendChild(pre);
 
