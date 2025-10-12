@@ -28,35 +28,25 @@ impl<EP: Endpoint> Endpoint for EnforceMinJsOnProd<EP> {
             return self.0.call(req).await;
         }
 
-        let new_uri = {
-            let uri = std::mem::take(req.uri_mut());
+        {
+            let uri = req.uri().clone();
             let mut uri_parts = uri.into_parts();
-            let path = uri_parts
-                .path_and_query
-                .as_ref()
-                .expect("path_and_query")
-                .path();
-            let path = if path.ends_with(".js") {
-                let path = path.strip_suffix(".js").expect("strip_suffix");
-                format!("{}.min.js", path)
-            } else if path.ends_with(".JS") {
-                let path = path.strip_suffix(".JS").expect("strip_suffix");
-                format!("{}.MIN.JS", path)
-            } else {
-                path.to_string()
-            };
-            let query = uri_parts
-                .path_and_query
-                .as_ref()
-                .expect("path_and_query")
-                .query()
-                .unwrap_or_default()
-                .to_string();
-            let path = format!("{}?{}", path, query);
-            uri_parts.path_and_query = Some(path.parse().expect("parse"));
-            Uri::from_parts(uri_parts).expect("Uri::from_parts")
+            if let Some(path_and_query) = uri_parts.path_and_query.as_ref() {
+                let mut path = path_and_query.path().to_string();
+                if let Some(new_path) = path.strip_suffix(".js") {
+                    path = format!("{}.min.js", new_path)
+                } else if let Some(new_path) = path.strip_suffix(".JS") {
+                    path = format!("{}.MIN.JS", new_path)
+                }
+                if let Some(query) = path_and_query.query() {
+                    path = format!("{}?{}", path, query);
+                }
+                uri_parts.path_and_query = Some(path.parse().expect("parse"));
+                if let Ok(new_uri) = Uri::from_parts(uri_parts) {
+                    *req.uri_mut() = new_uri;
+                }
+            }
         };
-        *req.uri_mut() = new_uri;
 
         self.0.call(req).await
     }
