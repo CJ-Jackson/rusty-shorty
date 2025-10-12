@@ -46,7 +46,7 @@ impl<EP: Endpoint> Endpoint for EnforceMinJsOnProd<EP> {
                     *req.uri_mut() = new_uri;
                 }
             }
-        };
+        }
 
         self.0.call(req).await
     }
